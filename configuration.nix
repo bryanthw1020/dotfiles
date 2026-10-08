@@ -34,10 +34,29 @@
     onActivation.cleanup = "zap";  # remove anything not listed here
     onActivation.autoUpdate = true;
     onActivation.extraFlags = [ "--force" ];
+    taps = [
+      { name = "kilo-org/tap";        trusted = true; }
+      { name = "supabase/tap";        trusted = true; }
+      { name = "teamookla/speedtest"; trusted = true; }
+    ];
     brews = [
+      "btop"
+      "cocoapods"
+      "ffmpeg"
+      "gh"
+      "go"
       "herdr"
+      "kilo"
+      "mysql-client"
+      "openjdk"
+      "pandoc"
+      "railway"
+      "speedtest"
+      "supabase"
+      "tailscale"
     ];
     casks = [
+      "herd"
       "wezterm"
       "claude-code"
     ];
