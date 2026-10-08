@@ -2,6 +2,22 @@
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
+  # Laravel Herd owns Node; expose it to login/non-interactive shells so
+  # processes launched from them (VS Code, agents, `kilo mcp`) find node/npx.
+  nvmInit = ''
+    export NVM_DIR="$HOME/Library/Application Support/Herd/config/nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  '';
+  # GUI/extension processes (VS Code server, kilo serve) don't source a shell
+  # profile, so Herd's Node never reaches them. The Nix profile bin dir is on
+  # their PATH, so a shim here resolves Herd's npx on demand. Not a second
+  # Node: it just dispatches to whatever Herd currently has active.
+  npxShim = pkgs.writeShellScriptBin "npx" ''
+    export NVM_DIR="$HOME/Library/Application Support/Herd/config/nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    node_bin="$(dirname "$(command -v node)")"
+    exec "$node_bin/npx" "$@"
+  '';
 in
 
 {
@@ -16,6 +32,7 @@ in
     jq        # json on the command line
     lazygit
     neovim
+    npxShim   # npx for GUI/extension processes; dispatches to Herd's Node
     # the font everything renders in
     nerd-fonts.hack
   ];
@@ -26,11 +43,12 @@ in
     enable = true;
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
+    # Login shells: GUI apps and agents (VS Code, kilo) launched from one
+    # inherit this environment. .zshrc alone only reaches interactive shells.
+    profileExtra = nvmInit;
     initContent = ''
       bindkey '^f' autosuggest-accept
-      # Laravel Herd NVM integration
-      export NVM_DIR="$HOME/Library/Application Support/Herd/config/nvm"
-      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      ${nvmInit}
     '';
     shellAliases = {
       ".." = "cd ..";
