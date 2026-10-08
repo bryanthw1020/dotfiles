@@ -17,3 +17,6 @@ result-*
 
 # no-mistakes local validation state - never commit in this public repo
 .no-mistakes/
+
+# Kilo secrets live outside the repo (~/.config/kilo/secrets); never stage copies here
+home/.config/kilo/secrets/

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "permission": {
+    "bash": {
+      "pnpm run lint *": "allow",
+      "npx *": "allow",
+      "pnpm run typecheck *": "allow",
+      "pnpm run build *": "allow",
+      "php *": "allow",
+      "vendor/bin/pint *": "allow",
+      "pnpm --filter *": "allow",
+      "git diff *": "allow",
+      "git status *": "allow"
+    },
+    "nuxt-ui_get-component": {
+      "*": "allow"
+    },
+    "laravel-boost_application-info": {
+      "*": "allow"
+    },
+    "nuxt_get-deploy-provider": {
+      "*": "allow"
+    },
+    "nuxt_get-documentation-page": {
+      "*": "allow"
+    },
+    "nuxt_list-documentation-pages": {
+      "*": "allow"
+    }
+  },
+  "indexing": {
+    "provider": "kilo",
+    "vectorStore": "qdrant",
+    "model": "mistralai/mistral-embed-2312",
+    "qdrant": {
+      "url": "http://localhost:6333",
+      "apiKey": "{file:~/.config/kilo/secrets/qdrant-api-key}"
+    },
+    "enabled": true
+  },
+  "small_model": "kilo/deepseek/deepseek-v4.1-flash",
+  "model": "kilo/deepseek/deepseek-v4.1-flash",
+  "agent": {
+    "orchestrator": {
+      "disable": true
+    },
+    "plan": {
+      "disable": false
+    }
+  },
+  "default_agent": "code",
+  "provider": {
+  },
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{file:~/.config/kilo/secrets/github-pat}",
+        "GITHUB_READ_ONLY": "1"
+      },
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "environment": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "{file:~/.config/kilo/secrets/playwright-token}"
+      }
+    }
+  },
+  "disabled_providers": [],
+  "web_search": true,
+  "auto_collapse_reasoning": true,
+  "remote_control": false,
+  "hide_prompt_training_models": true,
+  "retention": {
+    "enabled": true
+  }
+}
