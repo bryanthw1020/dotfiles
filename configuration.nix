@@ -27,6 +27,7 @@
   };
   nix-homebrew = {
     enable = true;
+    autoMigrate = true;
     inherit user;
   };
   homebrew = {
@@ -50,6 +51,7 @@
       "mysql-client"
       "openjdk"
       "pandoc"
+      "ripgrep"
       "railway"
       "speedtest"
       "supabase"
