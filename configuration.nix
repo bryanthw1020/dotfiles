@@ -36,6 +36,7 @@
     onActivation.autoUpdate = true;
     onActivation.extraFlags = [ "--force" ];
     taps = [
+      { name = "anomalyco/tap";       trusted = true; }
       { name = "kilo-org/tap";        trusted = true; }
       { name = "supabase/tap";        trusted = true; }
       { name = "teamookla/speedtest"; trusted = true; }
@@ -50,6 +51,7 @@
       "kilo"
       "mysql-client"
       "openjdk"
+      "opencode"
       "pandoc"
       "ripgrep"
       "railway"

@@ -10,7 +10,13 @@
       "vendor/bin/pint *": "allow",
       "pnpm --filter *": "allow",
       "git diff *": "allow",
-      "git status *": "allow"
+      "git status *": "allow",
+      "echo *": "allow",
+      "git ls-files *": "allow",
+      "git rev-parse *": "allow",
+      "git log *": "allow",
+      "git branch *": "allow",
+      "git show *": "allow"
     },
     "nuxt-ui_get-component": {
       "*": "allow"

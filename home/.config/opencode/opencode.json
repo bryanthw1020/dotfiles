@@ -1,0 +1,5 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "kilo/deepseek/deepseek-v4.1-flash",
+  "small_model": "kilo/deepseek/deepseek-v4.1-flash"
+}

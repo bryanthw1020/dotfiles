@@ -12,9 +12,17 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+
+    # Agent tooling built from source by their own nix flakes.
+    # Pin by updating these inputs (`nix flake update treehouse no-mistakes`).
+    treehouse.url = "github:kunchenguid/treehouse";
+    treehouse.inputs.nixpkgs.follows = "nixpkgs";
+
+    no-mistakes.url = "github:kunchenguid/no-mistakes";
+    no-mistakes.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nix-darwin, nix-homebrew, home-manager, nixpkgs }:
+  outputs = inputs@{ self, nix-darwin, nix-homebrew, home-manager, treehouse, no-mistakes, nixpkgs }:
     let
       # The one username line to change if this isn't your machine.
       # bootstrap.sh offers to rewrite this for you if your macOS username differs.
@@ -28,6 +36,13 @@
           nix-homebrew.darwinModules.nix-homebrew
           home-manager.darwinModules.home-manager
           {
+            # Expose the agent tools as packages so home.nix can install them.
+            nixpkgs.overlays = [
+              (final: _: {
+                inherit (inputs.treehouse.packages.${final.system}) treehouse;
+                inherit (inputs.no-mistakes.packages.${final.system}) no-mistakes;
+              })
+            ];
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "backup";
