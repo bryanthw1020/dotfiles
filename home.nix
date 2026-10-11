@@ -38,6 +38,13 @@ in
   home.username = user;
   home.homeDirectory = "/Users/${user}";
   home.stateVersion = "24.11";
+
+  # Skip the generated `man home-configuration.nix` page. It renders the
+  # nixpkgs `meta.maintainers` option, whose declaration site is a raw nixpkgs
+  # store path; nixosOptionsDoc strips string context from that JSON, so
+  # Determinate Nix warns about a dangling store reference on every rebuild.
+  # The page is cosmetic, so dropping it keeps rebuilds quiet.
+  manual.manpages.enable = false;
   home.packages = with pkgs; [
     # cli i use constantly
     ripgrep   # fast search

@@ -39,8 +39,8 @@
             # Expose the agent tools as packages so home.nix can install them.
             nixpkgs.overlays = [
               (final: _: {
-                inherit (inputs.treehouse.packages.${final.system}) treehouse;
-                inherit (inputs.no-mistakes.packages.${final.system}) no-mistakes;
+                inherit (inputs.treehouse.packages.${final.stdenv.hostPlatform.system}) treehouse;
+                inherit (inputs.no-mistakes.packages.${final.stdenv.hostPlatform.system}) no-mistakes;
               })
             ];
             home-manager.useGlobalPkgs = true;
