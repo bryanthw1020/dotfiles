@@ -81,6 +81,20 @@
       "environment": {
         "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "{file:~/.config/kilo/secrets/playwright-token}"
       }
+    },
+    "rea": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "rea-agents@6.4.0",
+        "mcp"
+      ],
+      "environment": {
+        "GHIDRA_INSTALL_DIR": "/opt/homebrew/opt/ghidra/libexec",
+        "JAVA_HOME": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+      },
+      "enabled": true
     }
   },
   "disabled_providers": [],
