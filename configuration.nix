@@ -65,6 +65,8 @@
       "herd"
       "wezterm"
       "claude-code"
+      "antigravity"      # Antigravity 2.0 hub; nixpkgs' "antigravity" is the IDE, not this
+      "antigravity-cli"  # `agy` terminal agent, shares the hub's agent engine
     ];
   };
 }
