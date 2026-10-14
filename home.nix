@@ -83,7 +83,13 @@ in
   programs.mise = {
     enable = true;
     enableZshIntegration = true;
-    globalConfig.tools.node = "22";
+    globalConfig.tools = {
+      node = "22";
+      # firebase-tools comes from mise's npm backend, not the brew `firebase-cli`
+      # formula: that formula hardcodes its shebang to Homebrew's own node, so it
+      # ignored mise entirely. Installed here it runs on mise's node.
+      "npm:firebase-tools" = "latest";
+    };
   };
 
   programs.starship = {

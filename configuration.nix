@@ -46,7 +46,6 @@
       "cocoapods"
       "composer"  # PHP dependency manager; not in mise's registry
       "ffmpeg"
-      "firebase-cli"
       "gh"
       "ghidra"
       "go"
