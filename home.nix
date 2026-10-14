@@ -112,8 +112,16 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/kilo/kilo.jsonc";
   home.file.".claude/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
+
+  # Agent rules
+  home.file.".agents/rules".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
+  home.file.".codebuddy/rules".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
   home.file.".kilo/rules".source =
-    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.kilo/rules";
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
+  home.file.".gemini/config/rules".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
 
   # Keep Pi's credential and runtime state local by linking only authored files and directories.
   home.file.".pi/agent/themes".source =
