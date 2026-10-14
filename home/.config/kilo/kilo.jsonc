@@ -34,7 +34,24 @@
     },
     "nuxt_list-documentation-pages": {
       "*": "allow"
-    }
+    },
+    "read": {
+      "**/.env.example": "allow",
+      ".env.example": "allow",
+      "**/.env*": "deny",
+      ".env*": "deny",
+      "secrets/**": "deny"
+    },
+    "edit": {
+      "**/.env.example": "allow",
+      ".env.example": "allow",
+      "**/.env*": "deny",
+      ".env*": "deny",
+      "secrets/**": "deny",
+      "dist/**": "deny",
+      "*.lock": "deny"
+    },
+    "*": "ask"
   },
   "indexing": {
     "provider": "kilo",

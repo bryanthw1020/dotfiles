@@ -120,8 +120,6 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
   home.file.".kilo/rules".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
-  home.file.".gemini/config/rules".source =
-    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
 
   # Keep Pi's credential and runtime state local by linking only authored files and directories.
   home.file.".pi/agent/themes".source =
@@ -138,6 +136,8 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gemini/config/config.json";
   home.file.".gemini/config/mcp_config.json".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gemini/config/mcp_config.json";
+  home.file.".gemini/antigravity-cli/settings.json".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gemini/antigravity-cli/settings.json";
 
   # AGENTS.md setup
   home.file.".claude/CLAUDE.md".source =

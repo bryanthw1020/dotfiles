@@ -1,4 +1,4 @@
-# global agent instructions
+# Global agent instructions
 
 - Never use the em dash "—". Use plain dash "-" instead
 - When writing commit messages, NEVER auto-add your agent name as co-author
@@ -20,3 +20,6 @@ Keep this file for knowledge useful to almost every future agent session in this
 Do not repeat what the codebase already shows; point to the authoritative file or command instead.
 Prefer rewriting or pruning existing entries over appending new ones.
 When updating this file, preserve this bar for all agents and keep entries concise.
+
+## Rules
+@[Restricted Files Rules](~/.agents/rules/restricted-files.md)
