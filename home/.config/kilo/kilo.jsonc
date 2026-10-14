@@ -93,11 +93,9 @@
       "command": [
         "npx",
         "-y",
-        "@playwright/mcp@latest"
-      ],
-      "environment": {
-        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "{file:~/.config/kilo/secrets/playwright-token}"
-      }
+        "@playwright/mcp@latest",
+        "--headless"
+      ]
     },
     "rea": {
       "type": "local",

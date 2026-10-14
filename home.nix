@@ -2,35 +2,23 @@
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
-  # Laravel Herd owns Node; expose it to login/non-interactive shells so
-  # processes launched from them (VS Code, agents, `kilo mcp`) find node/npx.
-  nvmInit = ''
-    export NVM_DIR="$HOME/Library/Application Support/Herd/config/nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  # mise owns Node version management (see programs.mise below). Non-interactive
+  # shells do not source .zshrc, so expose mise's shims dir from .zshenv
+  # (envExtra). The check keeps nested shells from stacking PATH entries.
+  miseShims = ''
+    case ":$PATH:" in
+      *":$HOME/.local/share/mise/shims:"*) ;;
+      *) export PATH="$HOME/.local/share/mise/shims:$PATH" ;;
+    esac
   '';
   # GUI/extension processes (VS Code server, kilo serve) don't source a shell
-  # profile, so Herd's Node never reaches them. The Nix profile bin dir is on
-  # their PATH, so a shim here resolves Herd's npx on demand. Not a second
-  # Node: it just dispatches to whatever Herd currently has active.
+  # profile either, so mise's shims never reach them. The Nix profile bin dir is
+  # on their PATH, so a shim here resolves mise's npx on demand. Not a second
+  # Node: it just dispatches to whatever mise currently has installed.
   npxShim = pkgs.writeShellScriptBin "npx" ''
-    export NVM_DIR="$HOME/Library/Application Support/Herd/config/nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-    node_bin="$(dirname "$(command -v node)")"
-    exec "$node_bin/npx" "$@"
-  '';
-  # Herd owns PHP too (php, composer, herd CLIs live in its bin dir). Its
-  # installer can't add this itself because home-manager owns the shells.
-  # Lives in .zshenv (envExtra), not home.sessionPath: session vars are
-  # guarded once per process tree, so shells spawned under long-running
-  # processes started before a rebuild (herdr, VS Code, kilo) would never
-  # see the new PATH. .zshenv is re-read by every zsh, so those shells
-  # self-heal. The check keeps nested shells from stacking PATH entries.
-  # ./php is a Herd-managed symlink; switching versions follows along.
-  herdPath = ''
-    case ":$PATH:" in
-      *":$HOME/Library/Application Support/Herd/bin:"*) ;;
-      *) export PATH="$HOME/Library/Application Support/Herd/bin:$PATH" ;;
-    esac
+    mise_shims="$HOME/.local/share/mise/shims"
+    export PATH="$mise_shims:$PATH"
+    exec "$mise_shims/npx" "$@"
   '';
 in
 
@@ -53,7 +41,7 @@ in
     jq        # json on the command line
     lazygit
     neovim
-    npxShim   # npx for GUI/extension processes; dispatches to Herd's Node
+    npxShim   # npx for GUI/extension processes; dispatches to mise's Node
     # agent tooling
     treehouse    # isolated git worktrees so parallel jobs can't collide
     no-mistakes  # review-and-test gate for PR work
@@ -74,13 +62,9 @@ in
     enable = true;
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
-    envExtra = herdPath;
-    # Login shells: GUI apps and agents (VS Code, kilo) launched from one
-    # inherit this environment. .zshrc alone only reaches interactive shells.
-    profileExtra = nvmInit;
+    envExtra = miseShims;
     initContent = ''
       bindkey '^f' autosuggest-accept
-      ${nvmInit}
     '';
     shellAliases = {
       ".." = "cd ..";
@@ -91,6 +75,15 @@ in
       cc = "claude --dangerously-skip-permissions";
       co = "codex --full-auto";
     };
+  };
+
+  # Node version manager (replaces Laravel Herd's bundled nvm). The global
+  # default is pinned here; per-project versions come from a repo's .mise.toml
+  # or .nvmrc. PHP and composer stay on Homebrew, not mise.
+  programs.mise = {
+    enable = true;
+    enableZshIntegration = true;
+    globalConfig.tools.node = "22";
   };
 
   programs.starship = {

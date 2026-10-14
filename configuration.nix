@@ -44,6 +44,7 @@
     brews = [
       "btop"
       "cocoapods"
+      "composer"  # PHP dependency manager; not in mise's registry
       "ffmpeg"
       "firebase-cli"
       "gh"
@@ -57,13 +58,13 @@
       "openjdk@21"  # runtime JDK that the ghidra formula pins
       "opencode"
       "pandoc"
+      "php"  # prebuilt PHP; replaces Laravel Herd's bundled PHP
       "ripgrep"
       "railway"
       "speedtest"
       "supabase"
     ];
     casks = [
-      "herd"
       "wezterm"
       "visual-studio-code"  # official Microsoft build (MS Marketplace); ships the `code` CLI
       "claude-code"
