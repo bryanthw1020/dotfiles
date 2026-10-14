@@ -2,21 +2,23 @@
   "$schema": "https://app.kilo.ai/config.json",
   "permission": {
     "bash": {
+      // Tightened commands
       "pnpm run lint *": "allow",
-      "npx *": "allow",
       "pnpm run typecheck *": "allow",
-      "pnpm run build *": "allow",
-      "php *": "allow",
       "vendor/bin/pint *": "allow",
       "pnpm --filter *": "allow",
+      // Explicit npx and php commands (Replace with your actual tools, e.g., prisma, artisan, pest)
+      "npx eslint *": "allow",
+      "php artisan *": "allow",
+      // Safe Read-only/Informational commands
       "git diff *": "allow",
       "git status *": "allow",
-      "echo *": "allow",
       "git ls-files *": "allow",
       "git rev-parse *": "allow",
       "git log *": "allow",
       "git branch *": "allow",
-      "git show *": "allow"
+      "git show *": "allow",
+      "echo *": "allow"
     },
     "nuxt-ui_get-component": {
       "*": "allow"
@@ -55,8 +57,7 @@
     }
   },
   "default_agent": "code",
-  "provider": {
-  },
+  "provider": {},
   "mcp": {
     "github": {
       "type": "local",
@@ -104,5 +105,5 @@
   "hide_prompt_training_models": true,
   "retention": {
     "enabled": true
-  }
+  },
 }
