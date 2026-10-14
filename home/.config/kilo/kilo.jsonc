@@ -50,8 +50,7 @@
       "secrets/**": "deny",
       "dist/**": "deny",
       "*.lock": "deny"
-    },
-    "*": "ask"
+    }
   },
   "indexing": {
     "provider": "kilo",

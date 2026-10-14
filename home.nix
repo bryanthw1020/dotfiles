@@ -57,6 +57,13 @@ in
     # agent tooling
     treehouse    # isolated git worktrees so parallel jobs can't collide
     no-mistakes  # review-and-test gate for PR work
+    # Flutter/Dart development. `flutter` bundles a matching Dart SDK, so it
+    # provides both `flutter` and `dart`; do not also add `dart` here or the two
+    # packages collide on bin/dart in the profile.
+    flutter
+    # VS Code is the official Microsoft build, installed via the Homebrew cask
+    # in configuration.nix (MS Marketplace). It is not managed here on purpose:
+    # nixpkgs only ships Code - OSS, and a second install would duplicate `code`.
     # the font everything renders in
     nerd-fonts.hack
   ];

@@ -45,6 +45,7 @@
       "btop"
       "cocoapods"
       "ffmpeg"
+      "firebase-cli"
       "gh"
       "ghidra"
       "go"
@@ -64,8 +65,8 @@
     casks = [
       "herd"
       "wezterm"
+      "visual-studio-code"  # official Microsoft build (MS Marketplace); ships the `code` CLI
       "claude-code"
-      "antigravity"      # Antigravity 2.0 hub; nixpkgs' "antigravity" is the IDE, not this
       "antigravity-cli"  # `agy` terminal agent, shares the hub's agent engine
     ];
   };
