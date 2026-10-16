@@ -116,6 +116,12 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/opencode/opencode.json";
   home.file.".config/kilo/kilo.jsonc".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/kilo/kilo.jsonc";
+  # TUI plugins are a separate config surface from kilo.jsonc; tui.json lists
+  # them explicitly (there is no directory auto-discovery).
+  home.file.".config/kilo/tui.json".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/kilo/tui.json";
+  home.file.".config/kilo/tui-plugins".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/kilo/tui-plugins";
   home.file.".claude/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
 

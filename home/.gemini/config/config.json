@@ -1,4 +1,15 @@
 {
+    "plugins": {
+        "chrome-devtools-plugin": {
+            "enabled": true
+        },
+        "flutter": {
+            "enabled": true
+        },
+        "modern-web-guidance-plugin": {
+            "enabled": true
+        }
+    },
     "userSettings": {
         "cliRemoteControlHostname": "MBP-Dev",
         "remoteControlHostname": "MBP-Dev"

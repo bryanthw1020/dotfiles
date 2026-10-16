@@ -1,0 +1,4 @@
+{
+  "$schema": "https://app.kilo.ai/tui.json",
+  "plugin": ["./tui-plugins/enhance-prompt.tsx"]
+}

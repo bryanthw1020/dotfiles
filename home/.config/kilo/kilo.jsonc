@@ -1,7 +1,14 @@
 {
   "$schema": "https://app.kilo.ai/config.json",
+  // The installed CLI (kilo 7.8.8, OpenCode V1) rejects the V2 "permissions" and
+  // "providers" keys, and its IndexingConfig only accepts the v1 "provider" shape,
+  // so those keep their V1 forms until the CLI supports V2.
   "permission": {
     "bash": {
+      "npm config *": "deny",
+      "npm set *": "deny",
+      "pnpm dlx *": "deny",
+      "NODE_OPTIONS=* pnpm exec *": "deny",
       // Tightened commands
       "pnpm run lint *": "allow",
       "pnpm run typecheck *": "allow",
@@ -18,7 +25,15 @@
       "git log *": "allow",
       "git branch *": "allow",
       "git show *": "allow",
-      "echo *": "allow"
+      "echo *": "allow",
+      "pnpm --version *": "allow",
+      "pnpm exec vite*": "allow",
+      "pnpm exec tsc*": "allow",
+      "pnpm exec vitest*": "allow",
+      "pnpm exec eslint*": "allow",
+      "pnpm exec prettier*": "allow",
+      "npm view [a-zA-Z0-9-_@/]*": "allow",
+      "npm view [a-zA-Z0-9-_@/]* [a-zA-Z0-9.]*": "allow"
     },
     "nuxt-ui_get-component": {
       "*": "allow"
@@ -64,60 +79,56 @@
   },
   "small_model": "kilo/deepseek/deepseek-v4.1-flash",
   "model": "kilo/deepseek/deepseek-v4.1-flash",
-  "agent": {
+  "agents": {
     "orchestrator": {
-      "disable": true
-    },
-    "plan": {
-      "disable": false
+      "disabled": true
     }
   },
   "default_agent": "code",
-  "provider": {},
   "mcp": {
-    "github": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
-      "environment": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "{file:~/.config/kilo/secrets/github-pat}",
-        "GITHUB_READ_ONLY": "1"
+    "servers": {
+      "github": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "@modelcontextprotocol/server-github"
+        ],
+        "environment": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "{file:~/.config/kilo/secrets/github-pat}",
+          "GITHUB_READ_ONLY": "1"
+        }
       },
-      "enabled": true
-    },
-    "playwright": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@playwright/mcp@latest",
-        "--headless"
-      ]
-    },
-    "rea": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "rea-agents@6.4.0",
-        "mcp"
-      ],
-      "environment": {
-        "GHIDRA_INSTALL_DIR": "/opt/homebrew/opt/ghidra/libexec",
-        "JAVA_HOME": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+      "playwright": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "@playwright/mcp@latest",
+          "--headless"
+        ]
       },
-      "enabled": true
+      "rea": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "rea-agents@6.4.0",
+          "mcp"
+        ],
+        "environment": {
+          "GHIDRA_INSTALL_DIR": "/opt/homebrew/opt/ghidra/libexec",
+          "JAVA_HOME": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+        }
+      }
     }
   },
-  "disabled_providers": [],
   "web_search": true,
-  "auto_collapse_reasoning": true,
+  "reasoning_display": "preview",
   "remote_control": false,
   "hide_prompt_training_models": true,
   "retention": {
-    "enabled": true
-  },
+    "enabled": true,
+    "maxAgeDays": 30
+  }
 }

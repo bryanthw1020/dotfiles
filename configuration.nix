@@ -38,6 +38,10 @@
     taps = [
       { name = "anomalyco/tap";       trusted = true; }
       { name = "kilo-org/tap";        trusted = true; }
+      { name = "shivammathur/extensions"; trusted = true; }
+      # Build-dep of the extension below; brew fails to resolve phpredis@8.5
+      # without this tap even though it installs from a bottle.
+      { name = "shivammathur/php";    trusted = true; }
       { name = "supabase/tap";        trusted = true; }
       { name = "teamookla/speedtest"; trusted = true; }
     ];
@@ -58,6 +62,9 @@
       "opencode"
       "pandoc"
       "php"  # prebuilt PHP; replaces Laravel Herd's bundled PHP
+      # phpredis for the `php` formula above; the @NN suffix must match that
+      # formula's minor version or the extension fatals on load. Bump both together.
+      "shivammathur/extensions/redis@8.5"
       "ripgrep"
       "railway"
       "speedtest"
