@@ -12,7 +12,19 @@
   "followUpMode": "all",
   "collapseChangelog": true,
   "packages": [
-    "npm:pi-web-access@0.14.0",
-    "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.6"
+    "npm:pi-web-access@0.32.0",
+    "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.6",
+    "npm:pi-opencode-provider"
+  ],
+  "lastChangelogVersion": "1.3.0",
+  "deviceId": "fb36ee88-f2f3-4e91-a6e1-d64d6e42bada",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "deepseek-v4.1-flash",
+  "defaultThinkingLevel": "high",
+  "enabledModels": [
+    "opencode-go/deepseek-v4.1-flash",
+    "opencode-go/glm-5.3-flash",
+    "opencode-go/gpt-6-luna",
+    "opencode-go/mimo-v2.6-pro"
   ]
 }

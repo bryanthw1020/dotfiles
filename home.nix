@@ -45,6 +45,7 @@ in
     # agent tooling
     treehouse    # isolated git worktrees so parallel jobs can't collide
     no-mistakes  # review-and-test gate for PR work
+    pi           # terminal coding agent; flake pins the upstream release
     # Flutter/Dart development. `flutter` bundles a matching Dart SDK, so it
     # provides both `flutter` and `dart`; do not also add `dart` here or the two
     # packages collide on bin/dart in the profile.
@@ -65,6 +66,16 @@ in
     envExtra = miseShims;
     initContent = ''
       bindkey '^f' autosuggest-accept
+
+      # SSH sessions (including Tailscale SSH) don't run the GUI login that
+      # unlocks the login keychain, so keychain-backed tools fail. Unlock once
+      # per connection; KEYCHAIN_UNLOCKED guards the nested-shell case. The
+      # variable is session-local, so a fresh SSH login prompts again.
+      if [ -n "$SSH_CONNECTION" ] && [ -z "$KEYCHAIN_UNLOCKED" ]; then
+        echo "🔑 SSH session detected. Unlocking Mac login keychain..."
+        security unlock-keychain ~/Library/Keychains/login.keychain-db
+        export KEYCHAIN_UNLOCKED=true
+      fi
     '';
     shellAliases = {
       ".." = "cd ..";

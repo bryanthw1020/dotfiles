@@ -30,7 +30,7 @@ Running the switch builds:
 - Editor (Neovim config with the rose-pine moon theme)
 - Terminal (WezTerm config with the rose-pine moon theme and dimmed unfocused windows)
 - Agent configs (Claude, Codex, opencode all share one AGENTS.md)
-- Optional Pi theme and local extensions, generic UI settings and model overrides, plus two deliberately pinned third-party Pi packages
+- Pi CLI built from its upstream flake, plus a theme, local extensions, generic UI settings, model overrides, and two deliberately pinned third-party packages
 
 ## Prerequisites
 
@@ -145,15 +145,17 @@ The files under `home/` are the real files - editing them here is editing your l
 `home.nix` uses `mkOutOfStoreSymlink` to point paths like `~/.config/nvim` straight at `home/.config/nvim` in this repo, so the two never drift out of sync.
 You only run `./rebuild.sh` when you change something that isn't just a symlinked file, like a package list or a system default.
 
-## Optional Pi configuration
+## Pi
 
-Pi is an opt-in CLI, not a dependency this repository vendors. Install it from its owner with the [official Pi instructions](https://pi.dev), for example:
+Pi is installed declaratively from its upstream Nix flake, pinned by the `pi` input in `flake.nix`:
 
-```sh
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+```nix
+pi.url = "github:earendil-works/pi/stable";
 ```
 
-[Pi Launcher](https://github.com/kunchenguid/homebrew-tap) is also optional and installed from its owner, not declared by this config:
+Update it with `nix flake update pi` followed by `./rebuild.sh`. Do not run `pi update` from a Nix install; it cannot update the Nix-managed package.
+
+[Pi Launcher](https://github.com/kunchenguid/homebrew-tap) remains optional and installed from its owner, not declared by this config:
 
 ```sh
 brew install --cask kunchenguid/tap/pi-launcher
@@ -171,14 +173,14 @@ Calm never changes prompts, tool execution, model context, session data, or orde
 
 Pi's package system declares two third-party sources in the linked global `settings.json`:
 
-- `npm:pi-web-access@0.14.0` - the exact public npm release for web access.
+- `npm:pi-web-access@0.32.0` - the exact public npm release for web access.
 - `npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.6` - the exact public npm release from `ryan_nookpi`.
 
 The versions are immutable pins, so Pi does not move them during package updates. Deliberate updates require a new source and security audit, followed by an explicit pin change in `home/.pi/agent/settings.json`. On Pi 0.82.0, global settings declarations install missing pinned packages automatically at startup. No one-time install command is required. Pi keeps the downloaded npm package trees in its own unmanaged `~/.pi/agent/npm` runtime directory, outside Home Manager and Git tracking.
 
 Both packages execute with your full user permissions and must be trusted like any other executable code.
 
-Home Manager deliberately does not manage `~/.pi/agent` itself, or Pi authentication, sessions, trust decisions, caches, npm/git package trees, or any other runtime state. The model overrides contain no credentials or endpoint settings, do not choose a default model, and only take effect after you authenticate Pi yourself. This remains an additive post-video layer: it does not install Pi, a launcher, or package source code into this repository.
+Home Manager deliberately does not manage `~/.pi/agent` itself, or Pi authentication, sessions, trust decisions, caches, npm/git package trees, or any other runtime state. The model overrides contain no credentials or endpoint settings, do not choose a default model, and only take effect after you authenticate Pi yourself. The flake installs the CLI; this repository still does not vendor Pi, the launcher, or package source code.
 
 ## Notes
 

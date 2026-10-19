@@ -4,7 +4,12 @@
   // "providers" keys, and its IndexingConfig only accepts the v1 "provider" shape,
   // so those keep their V1 forms until the CLI supports V2.
   "permission": {
+    "external_directory": "ask",
     "bash": {
+      "sudo *": "deny",
+      "chown *": "deny",
+      "chmod *": "deny",
+      "export *": "deny",
       "npm config *": "deny",
       "npm set *": "deny",
       "pnpm dlx *": "deny",
@@ -33,7 +38,28 @@
       "pnpm exec eslint*": "allow",
       "pnpm exec prettier*": "allow",
       "npm view [a-zA-Z0-9-_@/]*": "allow",
-      "npm view [a-zA-Z0-9-_@/]* [a-zA-Z0-9.]*": "allow"
+      "npm view [a-zA-Z0-9-_@/]* [a-zA-Z0-9.]*": "allow",
+      "no-mistakes *": "allow",
+      "quota-axi *": "allow",
+      "kilo --version": "allow",
+      "node --version": "allow",
+      "bin/fm-wake-drain.sh *": "allow",
+      "bin/fm-startup-network.sh *": "allow",
+      "bin/fm-project-mode.sh *": "allow",
+      "bin/fm-brief.sh *": "allow",
+      "bin/fm-spawn.sh *": "allow",
+      "bin/fm-dispatch-resolve.sh *": "allow",
+      "bin/fm-bootstrap.sh *": "allow",
+      "bin/fm-tasks-axi.sh *": "allow",
+      "bin/fm-peek.sh *": "allow",
+      "bin/fm-crew-state.sh *": "allow",
+      "bin/fm-operational-input.sh *": "allow",
+      "bin/fm-control.sh *": "allow",
+      "bin/fm-send.sh *": "allow",
+      "bin/fm-guard.sh *": "allow",
+      "bin/fm-merge-local.sh *": "allow",
+      "bin/fm-session-start.sh *": "allow",
+      "pgrep -fl fm-watch": "allow"
     },
     "nuxt-ui_get-component": {
       "*": "allow"
@@ -77,8 +103,8 @@
     },
     "enabled": true
   },
-  "small_model": "kilo/deepseek/deepseek-v4.1-flash",
-  "model": "kilo/deepseek/deepseek-v4.1-flash",
+  "small_model": "kilo/xiaomi/mimo-v2.6-pro",
+  "model": "kilo/deepseek/deepseek-v4.1-flash-1017",
   "agents": {
     "orchestrator": {
       "disabled": true

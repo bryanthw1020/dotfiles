@@ -1,33 +1,37 @@
 {
-    "permissions": {
-        "allow": [
-            "command(regex:pnpm run (lint|typecheck).*)",
-            "command(regex:pnpm --filter .*)",
-            "command(regex:vendor/bin/pint.*)",
-            "command(regex:npx eslint .*)",
-            "command(regex:php artisan .*)",
-            "command(regex:git (diff|status|ls-files|rev-parse|log|branch|show).*)",
-            "command(echo)"
-        ],
-        "deny": [
-            "command(regex:git push .*( -f|--force).*)",
-            "command(regex:git reset --hard.*)",
-            "command(regex:git clean .*-f.*)",
-            "command(regex:git branch .*-D.*)",
-            "command(regex:git restore .*)",
-            "command(regex:php artisan (db:wipe|migrate:fresh|migrate:reset).*)",
-            "command(regex:php artisan migrate:rollback.*)",
-            "command(regex:php artisan schema:dump.*--prune.*)",
-            "command(regex:php artisan tinker.*)",
-            "command(regex:php artisan key:generate.*)",
-            "command(regex:php artisan env:decrypt.*)",
-            "command(rm -rf)",
-            "command(regex:curl .*)",
-            "command(sudo)",
-            "write_file(.git/)"
-        ],
-        "ask": [
-            "command(*)"
-        ]
-    }
+  "altScreenMode": "always",
+  "toolPermission": "proceed-in-sandbox",
+  "enableTerminalSandbox": true,
+  "showFeedbackSurvey": false,
+  "permissions": {
+    "allow": [
+      "command(regex:pnpm run (lint|typecheck).*)",
+      "command(regex:pnpm --filter .*)",
+      "command(regex:vendor/bin/pint.*)",
+      "command(regex:npx eslint .*)",
+      "command(regex:php artisan .*)",
+      "command(regex:git (diff|status|ls-files|rev-parse|log|branch|show).*)",
+      "command(echo)"
+    ],
+    "deny": [
+      "command(regex:git push .*( -f|--force).*)",
+      "command(regex:git reset --hard.*)",
+      "command(regex:git clean .*-f.*)",
+      "command(regex:git branch .*-D.*)",
+      "command(regex:git restore .*)",
+      "command(regex:php artisan (db:wipe|migrate:fresh|migrate:reset).*)",
+      "command(regex:php artisan migrate:rollback.*)",
+      "command(regex:php artisan schema:dump.*--prune.*)",
+      "command(regex:php artisan tinker.*)",
+      "command(regex:php artisan key:generate.*)",
+      "command(regex:php artisan env:decrypt.*)",
+      "command(rm -rf)",
+      "command(regex:curl .*)",
+      "command(sudo)",
+      "write_file(.git/)"
+    ],
+    "ask": [
+      "command(*)"
+    ]
+  }
 }
