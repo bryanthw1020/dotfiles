@@ -57,7 +57,13 @@ in
     nerd-fonts.hack
   ];
   fonts.fontconfig.enable = true;
-  home.sessionVariables.EDITOR = "nvim";
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    # Herdr and other launchd/GUI-launched processes inherit a C locale. zsh
+    # then counts Starship's prompt glyph as 3 columns, which makes redraws
+    # duplicate command text. A UTF-8 locale makes the width 1.
+    LANG = "en_US.UTF-8";
+  };
 
   programs.zsh = {
     enable = true;
@@ -66,16 +72,6 @@ in
     envExtra = miseShims;
     initContent = ''
       bindkey '^f' autosuggest-accept
-
-      # SSH sessions (including Tailscale SSH) don't run the GUI login that
-      # unlocks the login keychain, so keychain-backed tools fail. Unlock once
-      # per connection; KEYCHAIN_UNLOCKED guards the nested-shell case. The
-      # variable is session-local, so a fresh SSH login prompts again.
-      if [ -n "$SSH_CONNECTION" ] && [ -z "$KEYCHAIN_UNLOCKED" ]; then
-        echo "🔑 SSH session detected. Unlocking Mac login keychain..."
-        security unlock-keychain ~/Library/Keychains/login.keychain-db
-        export KEYCHAIN_UNLOCKED=true
-      fi
     '';
     shellAliases = {
       ".." = "cd ..";
