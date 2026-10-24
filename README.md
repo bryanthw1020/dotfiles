@@ -31,6 +31,7 @@ Running the switch builds:
 - Terminal (WezTerm config with the rose-pine moon theme and dimmed unfocused windows)
 - Agent configs (Claude, Codex, opencode all share one AGENTS.md)
 - Pi CLI built from its upstream flake, plus a theme, local extensions, generic UI settings, model overrides, and two deliberately pinned third-party packages
+- Mobile toolchains (Android Studio, Google's `android` CLI, `xcodes`, Swift lint/format), with one documented script for the SDK downloads
 
 ## Prerequisites
 
@@ -138,12 +139,50 @@ If you don't use it, just remove it from `brews` in your copy.
 - `rebuild.sh` - re-applies the config after the first switch.
   Run this every time you make a change.
 - `home/` - the actual config files that get symlinked into place; the sections below explain the shared symlink model and Pi's narrower selective setup.
+- `scripts/mobile-setup.sh` - one-time Android SDK and Xcode setup; see "Mobile development" below.
 
 ## How the symlinks work
 
 The files under `home/` are the real files - editing them here is editing your live config, no rebuild needed to see the change in your editor.
 `home.nix` uses `mkOutOfStoreSymlink` to point paths like `~/.config/nvim` straight at `home/.config/nvim` in this repo, so the two never drift out of sync.
 You only run `./rebuild.sh` when you change something that isn't just a symlinked file, like a package list or a system default.
+
+## Mobile development
+
+Android Studio, Google's `android` CLI, `xcodes`, `xcbeautify`, `swiftlint`, and `swiftformat` are declared in `configuration.nix`, so `./rebuild.sh` installs them.
+The SDK components and Xcode itself are not declarative: both involve Google/Apple licensing and multi-GB downloads.
+
+After the first rebuild, run the one-time setup manually:
+
+```sh
+bash scripts/mobile-setup.sh
+```
+
+It installs `platform-tools`, API 37.0, build-tools 37.0.0, the emulator, and an architecture-matched system image into `~/Library/Android/sdk` (also exposed as `ANDROID_HOME`) using `android sdk install`, the replacement for the deprecated `sdkmanager`.
+Override `ANDROID_API`, `ANDROID_BUILD_TOOLS`, or `SYSTEM_IMAGE` if you need different versions.
+The Android CLI uses its own license model, so there is no separate `sdkmanager --licenses` step.
+It then accepts the Xcode license and runs first-launch setup when Xcode is present.
+
+Older Flutter releases may still print `Android license status unknown` with command-line tools 23+; that is a Flutter detection bug fixed in Flutter 3.48, not a missing license.
+
+Xcode is not in Homebrew. Install it once with:
+
+```sh
+xcodes signin
+xcodes install --latest --select
+```
+
+The App Store works too. Simulator runtimes are a separate optional download: `xcodebuild -downloadPlatform iOS`.
+Verify everything with `flutter doctor -v`.
+
+The script stays manual on purpose: it is interactive, network-heavy, and changes state outside Nix.
+Re-running it is safe.
+
+If you already had the legacy `android-commandlinetools` cask installed, remove it once before rebuilding - both casks provide the same `android` binary:
+
+```sh
+brew uninstall --cask android-commandlinetools
+```
 
 ## Pi
 

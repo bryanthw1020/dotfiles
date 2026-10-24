@@ -63,7 +63,14 @@ in
     # then counts Starship's prompt glyph as 3 columns, which makes redraws
     # duplicate command text. A UTF-8 locale makes the width 1.
     LANG = "en_US.UTF-8";
+    # SDK components are installed by scripts/mobile-setup.sh; Android Studio
+    # defaults to the same directory.
+    ANDROID_HOME = "${config.home.homeDirectory}/Library/Android/sdk";
   };
+  home.sessionPath = [
+    "${config.home.homeDirectory}/Library/Android/sdk/platform-tools"
+    "${config.home.homeDirectory}/Library/Android/sdk/emulator"
+  ];
 
   programs.zsh = {
     enable = true;
@@ -92,6 +99,9 @@ in
     enableZshIntegration = true;
     globalConfig.tools = {
       node = "22";
+      # Gradle and other CLI Android builds need a JDK. mise sets JAVA_HOME,
+      # so this works on both architectures without hardcoding a brew path.
+      java = "temurin-21";
       # firebase-tools comes from mise's npm backend, not the brew `firebase-cli`
       # formula: that formula hardcodes its shebang to Homebrew's own node, so it
       # ignored mise entirely. Installed here it runs on mise's node.

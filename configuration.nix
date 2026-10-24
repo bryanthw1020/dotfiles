@@ -46,7 +46,6 @@
       { name = "teamookla/speedtest"; trusted = true; }
     ];
     brews = [
-      "btop"
       "cocoapods"
       "composer"  # PHP dependency manager; not in mise's registry
       "ffmpeg"
@@ -55,7 +54,7 @@
       "go"
       "herdr"
       "kilo"
-      "macmon"
+      "mole"
       "mysql-client"
       "openjdk"
       "openjdk@21"  # runtime JDK that the ghidra formula pins
@@ -64,17 +63,27 @@
       "php"  # prebuilt PHP; replaces Laravel Herd's bundled PHP
       # phpredis for the `php` formula above; the @NN suffix must match that
       # formula's minor version or the extension fatals on load. Bump both together.
-      "shivammathur/extensions/redis@8.5"
+      "shivammathur/extensions/phpredis@8.5"
       "ripgrep"
       "railway"
       "speedtest"
       "supabase"
+      # iOS/Android tooling. Xcode itself is installed separately by xcodes
+      # (see scripts/mobile-setup.sh); these are the surrounding CLI tools.
+      "xcodes"
+      "xcbeautify"
+      "swiftlint"
+      "swiftformat"
     ];
     casks = [
       "wezterm"
       "visual-studio-code"  # official Microsoft build (MS Marketplace); ships the `code` CLI
       "claude-code"
       "antigravity-cli"  # `agy` terminal agent, shares the hub's agent engine
+      "android-studio"
+      # Google's android CLI (the sdkmanager replacement). SDK components
+      # install into ANDROID_HOME, not here.
+      "android-cli"
     ];
   };
 }
