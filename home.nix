@@ -20,6 +20,19 @@ let
     export PATH="$mise_shims:$PATH"
     exec "$mise_shims/npx" "$@"
   '';
+  # Android SDK paths live here instead of home.sessionPath/sessionVariables.
+  # Those are guarded by Home Manager's __HM_SESS_VARS_SOURCED marker, which a
+  # long-lived VS Code server can inherit from a shell that started before a
+  # rebuild. The stale marker then makes .zshenv skip the whole session-vars
+  # file, so adb never reaches new terminals. Exporting in envExtra (also
+  # .zshenv) is not gated by that marker; the case check keeps PATH deduped.
+  androidSdk = ''
+    export ANDROID_HOME="$HOME/Library/Android/sdk"
+    case ":$PATH:" in
+      *":$ANDROID_HOME/platform-tools:"*) ;;
+      *) export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH" ;;
+    esac
+  '';
 in
 
 {
@@ -63,20 +76,13 @@ in
     # then counts Starship's prompt glyph as 3 columns, which makes redraws
     # duplicate command text. A UTF-8 locale makes the width 1.
     LANG = "en_US.UTF-8";
-    # SDK components are installed by scripts/mobile-setup.sh; Android Studio
-    # defaults to the same directory.
-    ANDROID_HOME = "${config.home.homeDirectory}/Library/Android/sdk";
   };
-  home.sessionPath = [
-    "${config.home.homeDirectory}/Library/Android/sdk/platform-tools"
-    "${config.home.homeDirectory}/Library/Android/sdk/emulator"
-  ];
 
   programs.zsh = {
     enable = true;
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
-    envExtra = miseShims;
+    envExtra = miseShims + androidSdk;
     initContent = ''
       bindkey '^f' autosuggest-accept
     '';
