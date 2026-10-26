@@ -68,6 +68,7 @@
       "ripgrep"
       "railway"
       "speedtest"
+      "stripe-cli"  # provides `stripe`; in homebrew-core, no tap needed
       "supabase"
       # iOS/Android tooling. Xcode itself is installed separately by xcodes
       # (see scripts/mobile-setup.sh); these are the surrounding CLI tools.
