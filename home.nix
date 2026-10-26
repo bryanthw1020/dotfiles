@@ -33,6 +33,12 @@ let
       *) export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH" ;;
     esac
   '';
+  # Homebrew's JDKs are keg-only, so pin the one JDK that Gradle/Flutter should
+  # see. Kept in envExtra (not sessionVariables) so long-lived IDE servers do
+  # not inherit a stale __HM_SESS_VARS_SOURCED marker and keep the wrong JDK.
+  javaHome = ''
+    export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+  '';
 in
 
 {
@@ -82,7 +88,7 @@ in
     enable = true;
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
-    envExtra = miseShims + androidSdk;
+    envExtra = miseShims + androidSdk + javaHome;
     initContent = ''
       bindkey '^f' autosuggest-accept
     '';
@@ -105,9 +111,9 @@ in
     enableZshIntegration = true;
     globalConfig.tools = {
       node = "22";
-      # Gradle and other CLI Android builds need a JDK. mise sets JAVA_HOME,
-      # so this works on both architectures without hardcoding a brew path.
-      java = "temurin-21";
+      # Java is deliberately not managed by mise: Homebrew's openjdk@21 is the
+      # single JDK (see JAVA_HOME below). Temurin here would install a second
+      # distribution and race the brew one for JAVA_HOME.
       # firebase-tools comes from mise's npm backend, not the brew `firebase-cli`
       # formula: that formula hardcodes its shebang to Homebrew's own node, so it
       # ignored mise entirely. Installed here it runs on mise's node.
@@ -155,6 +161,12 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
   home.file.".kilo/rules".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/rules";
+
+  # Skills load on demand: only name and description sit in context until needed.
+  home.file.".agents/skills/persist-artifacts".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/skills/persist-artifacts";
+  home.file.".claude/skills/persist-artifacts".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/skills/persist-artifacts";
 
   # Keep Pi's credential and runtime state local by linking only authored files and directories.
   home.file.".pi/agent/themes".source =

@@ -5,6 +5,9 @@
   "showFeedbackSurvey": false,
   "permissions": {
     "allow": [
+      "command(regex:flutter (analyze|test)( .*)?)",
+      "command(regex:dart (analyze|test|format)( .*)?)",
+      "command(regex:flutter doctor.*)",
       "command(regex:pnpm run (lint|typecheck).*)",
       "command(regex:pnpm --filter .*)",
       "command(regex:vendor/bin/pint.*)",
@@ -14,6 +17,7 @@
       "command(echo)"
     ],
     "deny": [
+      "command(regex:flutter pub publish.*)",
       "command(regex:git push .*( -f|--force).*)",
       "command(regex:git reset --hard.*)",
       "command(regex:git clean .*-f.*)",

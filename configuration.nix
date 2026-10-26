@@ -56,8 +56,9 @@
       "kilo"
       "mole"
       "mysql-client"
-      "openjdk"
-      "openjdk@21"  # runtime JDK that the ghidra formula pins
+      # Canonical JDK. Ghidra pulls openjdk@25 as its own dependency; it is
+      # keg-only, so it never becomes the default `java`.
+      "openjdk@21"
       "opencode"
       "pandoc"
       "php"  # prebuilt PHP; replaces Laravel Herd's bundled PHP
