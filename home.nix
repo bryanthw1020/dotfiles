@@ -69,6 +69,9 @@ in
     # provides both `flutter` and `dart`; do not also add `dart` here or the two
     # packages collide on bin/dart in the profile.
     flutter
+    # .NET SDK 10. The versioned nixpkgs attribute keeps `dotnet` on the 10.x
+    # line; the unversioned Homebrew cask would jump to 11 at its release.
+    dotnet-sdk_10
     # VS Code is the official Microsoft build, installed via the Homebrew cask
     # in configuration.nix (MS Marketplace). It is not managed here on purpose:
     # nixpkgs only ships Code - OSS, and a second install would duplicate `code`.

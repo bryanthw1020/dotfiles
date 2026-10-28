@@ -268,7 +268,7 @@
     },
     "enabled": true
   },
-  "small_model": "kilo/xiaomi/mimo-v2.6-pro",
+  "small_model": "kilo/xiaomi/mimo-v2.6-flash",
   "model": "kilo/deepseek/deepseek-v4.1-flash-1017",
   "agents": {
     "orchestrator": {

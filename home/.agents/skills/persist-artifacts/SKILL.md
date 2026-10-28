@@ -5,25 +5,27 @@ description: Use when planning a multi-step or multi-file change, recording an a
 
 # Persistent Workspace Artifacts
 
-## 1. When to persist
+The repository is the source of truth. Never keep the only copy of a plan, decision, review, task list, or spec in chat, agent memory, scratch directories, or tool-specific plan stores. If the repository defines its own artifact convention, follow it instead.
 
-Write an artifact to the repository when you plan a multi-step or multi-file change, record an architecture decision, write a review/post-mortem/handoff, track a multi-step task list, or write a feature spec/contract.
+## 1. Choose the type and directory
 
-The repository is the source of truth. Never keep the only copy in chat, agent memory, scratch directories, or tool-specific plan stores.
-
-If the repository defines its own artifact convention, follow the repository-specific rule.
-
-## 2. Layout and naming
-
-Paths are relative to the repo root.
-
-| Artifact | Directory | File name |
+| Type | Write it when it answers | Path (repo-relative) |
 | --- | --- | --- |
-| Plan | `docs/artifacts/` | `YYYYMMDDHHmmss-<topic>-plan.md` |
-| Review / post-mortem | `docs/artifacts/` | `YYYYMMDDHHmmss-<topic>-review.md` |
-| Task list | `docs/artifacts/` | `YYYYMMDDHHmmss-<topic>-tasklist.md` |
-| ADR | `docs/adr/` | `NNNN-<decision-title>.md` |
-| Spec / contract | `docs/specs/` | `<feature-name>-spec.md` |
+| Plan | How will we do this multi-step or multi-file change? | `docs/artifacts/YYYYMMDDHHmmss-<topic>-plan.md` |
+| Task list | What is left in this multi-step work? | `docs/artifacts/YYYYMMDDHHmmss-<topic>-tasklist.md` |
+| Review / post-mortem / handoff | What happened, what did we learn, where does the next agent resume? | `docs/artifacts/YYYYMMDDHHmmss-<topic>-review.md` |
+| ADR (Architecture Decision Record) | Why did we choose X over Y? | `docs/adr/NNNN-<decision-title>.md` |
+| Spec / contract | What must feature or component X do, and what is its interface? | `docs/specs/<feature-name>-spec.md` |
+
+Directory rules:
+
+- **`docs/adr/`**: one significant decision with alternatives and consequences, costly to reverse (technology, dependency, data model, API shape, system boundary). Not for routine choices or task steps. Immutable once `completed`: to reverse it, write a new ADR and link both.
+- **`docs/specs/`**: the intended behavior or interface of a feature or component, true until deliberately changed. Living document: edit in place, one per feature, no timestamp.
+- **`docs/artifacts/`**: time-bound records of doing the work (plans, task lists, reviews, handoffs). Timestamped snapshots: a new phase gets a new file.
+- **Quick test:** rationale → `adr`; current required behavior → `specs`; the work itself → `artifacts`.
+- **One task, several types:** keep the plan in `artifacts`, put decisions in an ADR and behavior in a spec, and link them with `related` instead of duplicating content.
+
+## 2. Naming
 
 - Timestamp is UTC creation time: `date -u +%Y%m%d%H%M%S`. Never use local time. Never rename an artifact after creation; to replace it, create a new one and supersede the old one.
 - `<topic>`, `<decision-title>`, `<feature-name>`: lowercase ASCII kebab-case, no spaces/slashes, no date.
@@ -65,14 +67,14 @@ tags: [maps, caching, performance]
 ## 4. Workflow
 
 1. **Check first.** Before a non-trivial task, search `docs/artifacts/`, `docs/specs/`, `docs/adr/` by topic and tag (not only filename). Update an existing artifact instead of duplicating it. If it is `superseded`, follow `superseded_by` first. If two artifacts cover one topic, reconcile into one and supersede the other (or link both and mark one primary). A `completed` artifact stays authoritative for its scope; a new phase gets a new artifact linked via `related`.
-2. **Plan in the repo.** For multi-step or multi-file work, create or update `docs/artifacts/YYYYMMDDHHmmss-<topic>-plan.md`. Steps are verifiable GFM checkboxes (`- [ ]` / `- [x]`). Include a `Verification` section stating how completion is checked.
+2. **Plan in the repo.** For multi-step or multi-file work, create or update a plan. Steps are verifiable GFM checkboxes (`- [ ]` / `- [x]`). Include a `Verification` section stating how completion is checked.
 3. **Keep status current.** Check off finished items and update `status` as work moves. Do not mark a plan `completed` while unchecked items remain unless they are listed as out of scope.
 4. **Leave a resumable handoff.** The artifact must be understandable without the chat: record decisions, assumptions, open questions, and the exact next step.
 
 ## 5. Content rules
 
 - **Portable only:** GitHub-Flavored Markdown, standard YAML frontmatter, and fenced `mermaid` diagrams. No vendor directives, custom XML tags, mention syntax, plan-store links, or UI-specific syntax. It must read correctly in a plain Markdown renderer.
-- **Non-destructive:** Never delete a superseded artifact. Do not rewrite an old ADR to hide a reversed decision; write a new ADR and link both. Preserve other authors' work: append or merge, and disagree with a dated note or a new artifact.
+- **Non-destructive:** Never delete a superseded artifact. Do not rewrite an old ADR to hide a reversed decision. Preserve other authors' work: append or merge, and disagree with a dated note or a new artifact.
 - **Links:** Repo-relative only (e.g. `../adr/0007-use-postgres.md`). No `file://`, absolute home paths, chat links, or tool-specific URLs.
 - **No secrets or personal data:** Artifacts are committed. Use placeholders for credentials, tokens, customer data, and private URLs.
 - **Write for a new contributor:** Define acronyms on first use, avoid chat shorthand, and prefer stable headings: `Context`, `Decision`, `Consequences`, `Steps`, `Verification`, `Open Questions`.
