@@ -39,6 +39,18 @@ let
   javaHome = ''
     export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
   '';
+  # OpenCode Go requires an x-opencode-session header. Strix applies
+  # LLM_EXTRA_HEADERS to every request but cannot mint a per-scan value, so
+  # this wrapper creates a fresh id and execs the pinned strix binary. Use
+  # `strix-go` for OpenCode Go; plain `strix` still works with Kilo Gateway.
+  strixGo = pkgs.writeShellScriptBin "strix-go" ''
+    set -euo pipefail
+    session="ses_$(${pkgs.openssl}/bin/openssl rand -hex 16)"
+    export LLM_EXTRA_HEADERS="$(${pkgs.jq}/bin/jq -cn --arg s "$session" \
+      --arg ua "strix/${pkgs.strix.version}" \
+      '{ "x-opencode-session": $s, "User-Agent": $ua }')"
+    exec ${pkgs.strix}/bin/strix "$@"
+  '';
 in
 
 {
@@ -65,6 +77,8 @@ in
     treehouse    # isolated git worktrees so parallel jobs can't collide
     no-mistakes  # review-and-test gate for PR work
     pi           # terminal coding agent; flake pins the upstream release
+    strix        # AI pentest agent; local derivation pins the release binary
+    strixGo      # strix wrapper that mints a fresh OpenCode Go session per scan
     # Flutter/Dart development. `flutter` bundles a matching Dart SDK, so it
     # provides both `flutter` and `dart`; do not also add `dart` here or the two
     # packages collide on bin/dart in the profile.
@@ -108,7 +122,9 @@ in
 
   # Node version manager (replaces Laravel Herd's bundled nvm). The global
   # default is pinned here; per-project versions come from a repo's .mise.toml
-  # or .nvmrc. PHP and composer stay on Homebrew, not mise.
+  # or .nvmrc. PHP and composer stay on Homebrew, not mise: mise builds PHP from
+  # source, while Homebrew ships keg-only bottles per version. Projects pick a
+  # PHP keg through direnv instead (see below).
   programs.mise = {
     enable = true;
     enableZshIntegration = true;
@@ -122,6 +138,16 @@ in
       # ignored mise entirely. Installed here it runs on mise's node.
       "npm:firebase-tools" = "latest";
     };
+  };
+
+  # Per-project environment switching. PHP versions are keg-only Homebrew
+  # formulae (see configuration.nix); a project selects one in its .envrc:
+  #   export PATH="/opt/homebrew/opt/php@8.3/bin:$PATH"
+  # then `direnv allow`. The hook is silent so loading adds no prompt noise.
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    silent = true;
   };
 
   programs.starship = {
@@ -169,6 +195,10 @@ in
   home.file.".agents/skills/persist-artifacts".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/skills/persist-artifacts";
   home.file.".claude/skills/persist-artifacts".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/skills/persist-artifacts";
+  home.file.".gemini/config/skills/persist-artifacts".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/skills/persist-artifacts";
+  home.file.".gemini/antigravity-cli/skills/persist-artifacts".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.agents/skills/persist-artifacts";
 
   # Keep Pi's credential and runtime state local by linking only authored files and directories.

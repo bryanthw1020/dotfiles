@@ -61,9 +61,18 @@
       "openjdk@21"
       "opencode"
       "pandoc"
+      # Multiple PHP versions. All are keg-only, so they never fight over
+      # /opt/homebrew/bin/php: `php` (8.5) stays the linked default, and
+      # projects select another keg by prepending its bin dir to PATH with
+      # direnv (see programs.direnv in home.nix).
       "php"  # prebuilt PHP; replaces Laravel Herd's bundled PHP
-      # phpredis for the `php` formula above; the @NN suffix must match that
-      # formula's minor version or the extension fatals on load. Bump both together.
+      "php@8.3"
+      "php@8.4"
+      # phpredis for each PHP version above. The @NN suffix must match that
+      # version's minor or the extension fatals on load, so bump the default
+      # and its extension together and add a new pair when adding a version.
+      "shivammathur/extensions/phpredis@8.3"
+      "shivammathur/extensions/phpredis@8.4"
       "shivammathur/extensions/phpredis@8.5"
       "ripgrep"
       "railway"

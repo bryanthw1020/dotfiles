@@ -42,7 +42,9 @@
           {
             # Expose the agent tools as packages so home.nix can install them.
             nixpkgs.overlays = [
-              (final: _: {
+              (final: prev: {
+                # Local derivation: nixpkgs does not package Strix.
+                strix = prev.callPackage ./pkgs/strix.nix { };
                 inherit (inputs.treehouse.packages.${final.stdenv.hostPlatform.system}) treehouse;
                 inherit (inputs.no-mistakes.packages.${final.stdenv.hostPlatform.system}) no-mistakes;
                 inherit (inputs.pi.packages.${final.stdenv.hostPlatform.system}) pi;
