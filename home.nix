@@ -39,17 +39,72 @@ let
   javaHome = ''
     export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
   '';
+  # strix persists every set env var verbatim into cli-config.json, and its
+  # loader feeds stored values straight into typed fields without decoding
+  # them. A string in the dict field llm.extra_headers therefore makes the
+  # next run die with "Input should be a valid dictionary". Normalize the
+  # stored headers before every invocation so no subcommand (scan, view,
+  # --help) can load a bad file.
+  strixConfigNormalizer = ''
+    normalize_strix_config() {
+      config="$HOME/.strix/cli-config.json"
+      [ -f "$config" ] || return 0
+      ${pkgs.jq}/bin/jq -e '(.env.LLM_EXTRA_HEADERS? | type) == "string"' \
+        "$config" >/dev/null 2>&1 || return 0
+      tmp="$(mktemp "$HOME/.strix/.cli-config.XXXXXX")" || return 0
+      if ${pkgs.jq}/bin/jq '
+        .env.LLM_EXTRA_HEADERS |= fromjson
+      ' "$config" >"$tmp" 2>/dev/null; then
+        chmod 600 "$tmp"
+        mv "$tmp" "$config"
+      else
+        rm -f "$tmp"
+      fi
+      return 0
+    }
+  '';
+  strixWrapped = pkgs.writeShellScriptBin "strix" ''
+    set -uo pipefail
+    ${strixConfigNormalizer}
+    normalize_strix_config
+    if [ "''${1-}" = view ]; then
+      # PyInstaller's onefile launcher and the Python child share a process
+      # group, so one Ctrl-C delivers SIGINT twice and can interrupt strix's
+      # own shutdown print mid-render. Run the viewer in its own group and
+      # forward the stop as a single SIGTERM.
+      set -m
+      ${pkgs.strix}/bin/strix "$@" &
+      viewer=$!
+      set +m
+      stopped=0
+      stop_viewer() {
+        stopped=1
+        kill -TERM "$viewer" 2>/dev/null || true
+      }
+      trap stop_viewer INT TERM HUP
+      wait "$viewer"
+      status=$?
+      trap - INT TERM HUP
+      if [ "$stopped" -eq 1 ]; then
+        printf '\nViewer stopped.\n'
+        exit 0
+      fi
+      exit "$status"
+    fi
+    exec ${pkgs.strix}/bin/strix "$@"
+  '';
   # OpenCode Go requires an x-opencode-session header. Strix applies
   # LLM_EXTRA_HEADERS to every request but cannot mint a per-scan value, so
-  # this wrapper creates a fresh id and execs the pinned strix binary. Use
-  # `strix-go` for OpenCode Go; plain `strix` still works with Kilo Gateway.
+  # this wrapper creates a fresh id and delegates to the normalizing `strix`.
+  # Use `strix-go` for OpenCode Go; plain `strix` still works with Kilo
+  # Gateway.
   strixGo = pkgs.writeShellScriptBin "strix-go" ''
-    set -euo pipefail
+    set -uo pipefail
     session="ses_$(${pkgs.openssl}/bin/openssl rand -hex 16)"
     export LLM_EXTRA_HEADERS="$(${pkgs.jq}/bin/jq -cn --arg s "$session" \
       --arg ua "strix/${pkgs.strix.version}" \
       '{ "x-opencode-session": $s, "User-Agent": $ua }')"
-    exec ${pkgs.strix}/bin/strix "$@"
+    exec ${strixWrapped}/bin/strix "$@"
   '';
 in
 
@@ -77,7 +132,7 @@ in
     treehouse    # isolated git worktrees so parallel jobs can't collide
     no-mistakes  # review-and-test gate for PR work
     pi           # terminal coding agent; flake pins the upstream release
-    strix        # AI pentest agent; local derivation pins the release binary
+    strixWrapped # AI pentest agent; normalizes its settings before every run
     strixGo      # strix wrapper that mints a fresh OpenCode Go session per scan
     # Flutter/Dart development. `flutter` bundles a matching Dart SDK, so it
     # provides both `flutter` and `dart`; do not also add `dart` here or the two
