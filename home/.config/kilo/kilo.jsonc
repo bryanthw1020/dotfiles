@@ -276,7 +276,7 @@
       "disabled": true
     }
   },
-  "default_agent": "code",
+  "default_agent": "delegator",
   "mcp": {
     "servers": {
       "github": {
