@@ -60,6 +60,7 @@
     },
     "bash": {
       // Allows first; last match wins, so the denies below override these.
+      "*": "ask",
       "pnpm run lint *": "allow",
       "pnpm run typecheck *": "allow",
       "vendor/bin/pint *": "allow",

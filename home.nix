@@ -229,6 +229,8 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/opencode/opencode.json";
   home.file.".config/kilo/kilo.jsonc".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/kilo/kilo.jsonc";
+  home.file.".config/kilo/agent".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/kilo/agent";
   # TUI plugins are a separate config surface from kilo.jsonc; tui.json lists
   # them explicitly (there is no directory auto-discovery).
   home.file.".config/kilo/tui.json".source =
