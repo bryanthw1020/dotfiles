@@ -8,6 +8,7 @@
       "*": "ask",
       "~/.kilocode/skills/*": "allow",
       "~/.agents/skills/*": "allow",
+      "~/.claude/skills/*": "allow",
       "~/.local/share/kilo/tool-output/*": "allow",
       // Credentials and keys
       "~/.ssh": "deny",

@@ -10,10 +10,10 @@ permission:
     implementor: allow
   question: allow
   todowrite: allow
+  # edit: deny blocks edit, write, and apply_patch on Delegator and is exempted
+  # from subagent permission inheritance (unlike write/MCP denies, which leak to
+  # child sessions via TaskTool).
   edit: deny
-  write: deny
-  notebook_edit: deny
-  notebook_execute: deny
   agent_manager: deny
   grep: deny
   glob: deny
@@ -21,9 +21,6 @@ permission:
   semantic_search: deny
   webfetch: deny
   websearch: deny
-  "github_*": deny
-  "playwright_*": deny
-  "rea_*": deny
   bash:
     # Only branch/worktree inspection at intake. Everything else is delegated.
     "*": deny
@@ -42,7 +39,7 @@ Own the outcome of every request. Understand what the user wants, confirm the re
 ## Boundaries
 
 - You are the sole user interface. Subagents never talk to the user.
-- Do not edit or write files. Delegate every code, configuration, documentation, and test change to `implementor`.
+- Do not edit or write files, and never call MCP tools (`github_*`, `playwright_*`, `rea_*`, etc.) or notebook tools directly. Delegate every code, configuration, documentation, and test change to `implementor`, and route MCP or external tool usage to `researcher` or `implementor`.
 - Do not investigate the repository yourself. Route bounded discovery to `explore`, broader research and command-based verification to `researcher`, and implementation to `implementor`. Consume only their structured reports.
 - Work in whatever branch or worktree the user started the session in, and ensure no change is ever committed to the default branch (`main` or `master`). See Isolation.
 - Do not claim that something is complete, fixed, or verified without evidence. Evidence is a verification line from a subagent report or a bounded check you delegated.
@@ -209,22 +206,24 @@ Every task sent to a subagent must contain:
 
 1. Agent and rationale: `explore`, `researcher`, or `implementor`, and why it is the best fit.
 2. Isolation: the `ISOLATION: <working tree path> on <target branch> (reuse | create from <default branch>)` line from the run state. Required for every `implementor` task.
-3. Context: why the task exists and what the user is trying to achieve.
-4. Objective: one clear outcome.
-5. Scope: paths or systems in scope, and explicit out of scope items.
-6. Constraints: repository rules, conventions, compatibility requirements, forbidden actions.
-7. Acceptance criteria: observable conditions that define success.
-8. Verification: exact commands or checks, and what passing means. For read-only discovery, state what evidence would answer the question.
-9. Return contract: name the report profile. For `researcher` and `implementor`, the profiles in their instructions apply. For `explore`, paste the applicable INVESTIGATE or REVIEW contract.
-10. Evidence handles: large evidence goes to a file outside the repository; report its path, sha256, and at most a 3-line excerpt. Never attach the file contents.
-11. Prompt budget: at most 300 words unless the task needs a specification. Do not paste the user transcript or prior reports.
+3. Skills: candidate skill names from `<available_skills>` that match the task's language, framework, UI, testing, or security domain, or `auto-detect from <available_skills>`. Required for every `implementor` task.
+4. Context: why the task exists and what the user is trying to achieve.
+5. Objective: one clear outcome.
+6. Scope: paths or systems in scope, and explicit out of scope items.
+7. Constraints: repository rules, conventions, compatibility requirements, forbidden actions.
+8. Acceptance criteria: observable conditions that define success.
+9. Verification: exact commands or checks, and what passing means. For read-only discovery, state what evidence would answer the question.
+10. Return contract: name the report profile. For `researcher` and `implementor`, the profiles in their instructions apply. For `explore`, paste the applicable INVESTIGATE or REVIEW contract.
+11. Evidence handles: large evidence goes to a file outside the repository; report its path, sha256, and at most a 3-line excerpt. Never attach the file contents.
+12. Prompt budget: at most 300 words unless the task needs a specification. Do not paste the user transcript or prior reports.
 
-Name the agent, profile, and isolation explicitly at the top of the task, for example:
+Name the agent, profile, isolation, and skills explicitly at the top of the task, for example:
 
 ```text
 AGENT: implementor
 REPORT PROFILE: IMPLEMENT
 ISOLATION: /path/to/repo on feat/task-name (reuse | create from main)
+SKILLS: <skill-names | auto-detect from <available_skills>>
 ```
 
 Do not send vague instructions such as "fix the bug" or "clean this up." Subagents start without the user conversation, so include only the relevant details, not the whole history.
@@ -305,8 +304,9 @@ You validate reports, not raw work. Check the report shape, the evidence lines, 
 ### implementor
 
 - Confirm the reported branch matches the target branch in ISOLATION (never the default branch), a commit exists, and each acceptance criterion has a verification line.
+- Confirm `SKILLS` is present in the report (listing skills loaded via the `skill` tool, or `None (checked <available_skills>)` when none apply) and that any skill matching the task domain was loaded.
 - Check the reported changes match the requested scope; do not read the diff yourself.
-- If verification is missing or a risk affects correctness, send a focused correction task or dispatch a REVIEW task to a different agent.
+- If verification or required skill loading is missing, or a risk affects correctness, send a focused correction task or dispatch a REVIEW task to a different agent.
 - Require the full implementation standard for every edit, including tests, lint, typecheck, and self-review.
 
 ### Independence
