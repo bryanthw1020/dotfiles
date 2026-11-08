@@ -2,6 +2,12 @@
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
+  # Homebrew prefix for this CPU. safe-chain's formula has no post-install
+  # hook, so its zsh integration has to be sourced from the keg. The `opt`
+  # symlink follows upgrades, unlike the copy that `safe-chain setup` drops
+  # in ~/.safe-chain/scripts.
+  brewPrefix = if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew" else "/usr/local";
+  safeChainHook = "${brewPrefix}/opt/safe-chain/libexec/lib/node_modules/@aikidosec/safe-chain/src/shell-integration/startup-scripts/init-posix.sh";
   # mise owns Node version management (see programs.mise below). Non-interactive
   # shells do not source .zshrc, so expose mise's shims dir from .zshenv
   # (envExtra). The check keeps nested shells from stacking PATH entries.
@@ -9,6 +15,18 @@ let
     case ":$PATH:" in
       *":$HOME/.local/share/mise/shims:"*) ;;
       *) export PATH="$HOME/.local/share/mise/shims:$PATH" ;;
+    esac
+  '';
+  # Agent and other non-interactive processes never load .zshrc, so the zsh
+  # functions from safe-chain's init hook cannot reach them. `safe-chain
+  # setup-ci` writes executable shims here; putting this dir ahead of mise in
+  # .zshenv makes every child shell inherit them. Order matters: this entry is
+  # prepended after miseShims above so safe-chain wins, then each shim strips
+  # its own dir before calling safe-chain so the real package manager resolves.
+  safeChainShims = ''
+    case ":$PATH:" in
+      *":$HOME/.safe-chain/shims:"*) ;;
+      *) export PATH="$HOME/.safe-chain/shims:$PATH" ;;
     esac
   '';
   # GUI/extension processes (VS Code server, kilo serve) don't source a shell
@@ -160,9 +178,14 @@ in
     enable = true;
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
-    envExtra = miseShims + androidSdk + javaHome;
+    envExtra = miseShims + safeChainShims + androidSdk + javaHome;
     initContent = ''
       bindkey '^f' autosuggest-accept
+      # Wrap npm, npx, pip, etc. as zsh functions (see configuration.nix brews).
+      # Home Manager owns .zshrc as a read-only store symlink, so the source
+      # line that `safe-chain setup` would append has to live here instead.
+      # Guarded so a machine without the formula still gets a working shell.
+      [ -f ${safeChainHook} ] && source ${safeChainHook}
     '';
     shellAliases = {
       ".." = "cd ..";
@@ -174,6 +197,18 @@ in
       co = "codex --full-auto";
     };
   };
+
+  # The shims referenced by safeChainShims are generated artifacts, not managed
+  # files. Regenerate them on every activation so they track the installed
+  # safe-chain version. Homebrew activation runs before this, so the binary is
+  # present; a failure warns instead of aborting the switch, since the
+  # interactive zsh hook above still protects terminals.
+  home.activation.safeChainShims = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -x ${brewPrefix}/bin/safe-chain ]; then
+      ${brewPrefix}/bin/safe-chain setup-ci >/dev/null ||
+        echo "warning: safe-chain setup-ci failed; agent shims may be stale" >&2
+    fi
+  '';
 
   # Node version manager (replaces Laravel Herd's bundled nvm). The global
   # default is pinned here; per-project versions come from a repo's .mise.toml

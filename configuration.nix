@@ -85,6 +85,7 @@
       "xcbeautify"
       "swiftlint"
       "swiftformat"
+      "safe-chain"
     ];
     casks = [
       "wezterm"
