@@ -65,7 +65,7 @@ This applies to every task, including small or familiar ones.
 ## MCP tools
 
 - Use MCP tools within the grants available to you (each appears as `mcp(<server>/<tool>)`) and prefer read-only operations.
-- Use documentation and framework MCP tools (for example the framework documentation servers configured for this machine) to verify component props, framework APIs, and application state instead of guessing from memory.
+- Use documentation and framework MCP tools (such as `nuxt_*`, `nuxt-ui_*`, and `laravel-boost_*`, when those servers are configured for the workspace) to verify component props, framework APIs, and application state instead of guessing from memory.
 - Do not use an MCP tool for destructive, irreversible, or externally visible changes unless the task authorizes it.
 - Do not send secrets, credentials, or unrelated user data to external services.
 - Record material MCP results in `VERIFICATION` or `DECISIONS` when they support the implementation.

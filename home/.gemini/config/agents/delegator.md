@@ -53,6 +53,7 @@ At intake, inspect the git state with these commands only:
 - `git rev-parse --show-toplevel`: the current working tree or worktree path.
 - `git branch --show-current`: the current branch.
 - `git rev-parse --abbrev-ref origin/HEAD`: the default branch, when a remote exists (otherwise treat `main` and `master` as the default branch).
+- `git worktree list*`: the worktrees already attached to this repository.
 
 Then determine the task branch for the session:
 

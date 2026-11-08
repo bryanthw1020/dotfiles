@@ -52,12 +52,16 @@ the installed binary (`~/.gemini/antigravity-cli/builtin/`).
 | `color` | Dropped. Antigravity has no agent color key. |
 | `model` pinned per agent | Sources pin none, so every agent uses `model: inherit`. |
 | `permission` denylist | Converted to an explicit `tools` allowlist per agent, plus prose for the restrictions that a tool allowlist cannot express. |
+| `permission` inheritance (the `edit: deny` exemption and write/MCP denies propagating into TaskTool child sessions) | No equivalent. Antigravity has no permission inheritance: each agent's `tools` allowlist is independent, and a deny is expressed by omitting the tool from that agent's list. Every agent must therefore be enumerated separately, and no parent deny is carried into a subagent. |
+| Worktree/branch isolation rules | No Antigravity equivalent. Retained as body prose in `delegator.md` and `implementor.md`; nothing in the runtime enforces them. |
 | `permission.task` allowlist | Delegator gets `invoke_subagent`, `send_message`, `manage_inbox`, and `manage_subagents`. `define_subagent` is withheld because the source forbids creating subagents at runtime. |
+| `task` three-agent allowlist (`explore`, `researcher`, `implementor`) | `invoke_subagent` accepts any `TypeName`, so the allowlist cannot be enforced. Type scoping survives only as prose in the Delegator's routing rules. |
 | `permission.edit: deny` on Delegator | Delegator has no `write_to_file`, `edit_file`, or `multi_replace_file_content`. |
 | `permission.edit/write/notebook_*: deny` on Researcher | Researcher has no write, edit, or notebook tools. |
 | `permission.bash` allow/deny patterns | Antigravity agent frontmatter has no per-command rule syntax. `run_command` is granted and the exact allowed or forbidden commands are stated in prose. |
 | `permission.question` | Delegator gets `ask_question`; Implementor and Researcher do not, and their bodies state that it is unavailable. |
 | `permission.todowrite` | No Antigravity todo tool exists. Delegator keeps its run-state block instead; the section is called out in the platform mapping. |
+| `manage_task` granted to Implementor | No direct Kilo counterpart; Kilo denied `todowrite`. `manage_task` covers background and cron task management, not todo lists, so the todo denial is intact. |
 | `permission.agent_manager` | No equivalent. Dropped; it only controlled Kilo's Agent Manager UI. |
 | `permission.grep`/`glob`/`list`/`semantic_search` | No search, list, or semantic tools are granted to Delegator. |
 | `permission.webfetch`/`websearch` | Delegator gets neither `read_url_content` nor `search_web`. Implementor and Researcher do. |
