@@ -310,6 +310,8 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gemini/config/mcp_config.json";
   home.file.".gemini/antigravity-cli/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gemini/antigravity-cli/settings.json";
+  home.file.".gemini/config/agents".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gemini/config/agents";
 
   # AGENTS.md setup
   home.file.".claude/CLAUDE.md".source =
