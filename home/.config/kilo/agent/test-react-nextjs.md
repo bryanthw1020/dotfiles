@@ -22,7 +22,18 @@ permission:
     "npm test*": allow
     "npm run test*": allow
     "yarn test*": allow
-    # Never rewrite history, merge, or push work off the machine.
+    "git switch *": allow
+    "git checkout -b *": allow
+    "git add *": allow
+    "git commit -m *": allow
+    # Never rewrite history, switch to default branch, merge, or push work off the machine.
+    "git switch main*": deny
+    "git switch master*": deny
+    "git checkout main*": deny
+    "git checkout master*": deny
+    "git commit *--amend*": deny
+    "git commit *--no-verify*": deny
+    "git commit *-n *": deny
     "git reset --hard*": deny
     "git merge *": deny
     "git rebase *": deny
@@ -101,7 +112,7 @@ Inspect `package.json`, `next.config.*` (if present), `vitest.config.*`, or `jes
 
 ## Report budget and profile
 
-Keep your report under 60 lines and 400 words. Never include source code, diffs, or raw logs. Use the `IMPLEMENT` profile (unless `REVIEW` or `INVESTIGATE` is explicitly requested):
+Keep your report under 60 lines and 400 words. Never include source code, diffs, or raw logs. For large evidence, write it to `.tool-output/kilo/<task>-<timestamp>.log` in the current working directory with the `write` tool (never stage or commit `.tool-output/`). Use the `IMPLEMENT` profile:
 
 ```text
 STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_INPUT | BLOCKED | FAILED
@@ -116,5 +127,5 @@ DECISIONS: At most 5 bullets.
 QUESTIONS: At most 3, each with options and a recommendation. "None." if empty.
 RISKS: At most 5 bullets (include any production or a11y bugs discovered). "None." if empty.
 NEXT: One concrete action. "None." if complete.
-EVIDENCE: Path(s) to retained logs outside the repo, or "None."
+EVIDENCE: Path(s) to retained logs under `.tool-output/kilo/`, or "None."
 ```

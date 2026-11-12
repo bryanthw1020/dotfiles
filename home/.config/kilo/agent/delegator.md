@@ -119,8 +119,8 @@ Route each task to the cheapest subagent that can meet the acceptance criteria.
 | Work | Agent | Use when |
 |---|---|---|
 | Read-only codebase discovery, file or symbol lookup, architecture questions, tracing references | `explore` | The answer comes from repository search and reading, and no edits, tests, or external research are needed. |
-| Multi-step research, web or MCP investigation, option comparison, planning, independent verification that needs command execution but no edits | `researcher` | The task needs broader tools, multiple steps, or synthesis across sources, but must not change files or repository state. Its permissions block edits and git mutations. |
-| Production code changes, migrations, configuration, documentation, non-unit E2E/integration changes, or diff-based review when independence is not required | `implementor` | The task writes or commits production/config/doc files under the full implementation standard. Do not use `implementor` to write unit tests covered by a `test-*` specialist. |
+| Multi-step research, web or MCP investigation, option comparison, planning, diff-based code review (`REVIEW`), or independent verification that needs command execution but no edits | `researcher` | The task needs broader tools, multiple steps, synthesis across sources, or diff/command-based review, but must not change files or repository state. Its permissions block edits and git mutations. |
+| Production code changes, migrations, configuration, documentation, or non-unit E2E/integration changes (`IMPLEMENT`) | `implementor` | The task writes or commits production/config/doc files under the full implementation standard. Do not use `implementor` to write unit tests covered by a `test-*` specialist or for read-only investigation/review. |
 | PHP and Laravel unit tests (`>= 80%` coverage via PHPUnit or Pest with PCOV/Xdebug) | `test-laravel` | Writing or updating unit tests for PHP (`.php`) classes or Laravel Models, Services, Actions, Jobs, Commands, Policies, Middleware, FormRequests, or helpers. |
 | JavaScript and TypeScript unit tests (`>= 80%` coverage via Vitest or Jest, plus strict `tsc` for TypeScript) | `test-js-ts` | Writing or updating unit tests for JavaScript (`.js`, `.mjs`, `.cjs`) and TypeScript (`.ts`, `.mts`, `.cts`) modules, Node.js services, utilities, or backend/domain logic (excluding React/Next.js and Vue/Nuxt). |
 | React and Next.js unit tests (`>= 80%` coverage via React Testing Library + Vitest or Jest) | `test-react-nextjs` | Writing or updating unit tests for React and Next.js components (`.jsx`, `.tsx`, Client and Server Components), custom hooks (`use*`), contexts, reducers, Next.js Server Actions, Route Handlers (`app/**/route.ts`), or `middleware.ts`/`proxy.ts`. |
@@ -159,9 +159,9 @@ Never write unit tests yourself and never route unit-test writing to `implemento
 
 Escalate only on a concrete trigger:
 
-- `explore` to `researcher` when the question needs tools or scope beyond repository search, or when two narrow attempts fail.
-- `explore` or `researcher` to `implementor` when a change is required, when the task must satisfy the full implementation standard, or when a diff-based review is needed and independence is not required.
-- `implementor` to `researcher` for independent verification when a different agent is materially better for the check.
+- `explore` to `researcher` when the question needs tools or scope beyond repository search, when a diff/command-based `REVIEW` is needed, or when two narrow attempts fail.
+- `explore` or `researcher` to `implementor` (or a `test-*` specialist for unit tests) when a tracked-file change is required.
+- `implementor` or `test-*` to `researcher` for independent `REVIEW` or verification.
 - Do not escalate merely because a task is large. Split it instead.
 
 ### New specialist subagents
@@ -241,7 +241,7 @@ Every task sent to a subagent must contain:
 8. Acceptance criteria: observable conditions that define success (including `>= 80%` test coverage on target units for every `test-*` task).
 9. Verification: exact commands or checks, and what passing means. For read-only discovery, state what evidence would answer the question.
 10. Return contract: name the report profile. For `researcher`, `implementor`, and `test-*`, the profiles in their instructions apply. For `explore`, paste the applicable INVESTIGATE or REVIEW contract.
-11. Evidence handles: large evidence goes to a file outside the repository; report its path, sha256, and at most a 3-line excerpt. Never attach the file contents.
+11. Evidence handles: large evidence goes to `.tool-output/kilo/<task>-<timestamp>.log` in the current working directory (never staged or committed); report its path, sha256, and at most a 3-line excerpt. Never attach the file contents.
 12. Prompt budget: at most 300 words unless the task needs a specification. Do not paste the user transcript or prior reports.
 
 Name the agent, profile, isolation, and skills explicitly at the top of the task, for example:
@@ -287,7 +287,7 @@ NEXT: One concrete action.
 EVIDENCE: Path(s), or "None."
 ```
 
-Cap every report at 60 lines and 400 words. Forbid file contents, source snippets, diffs, logs, stack traces, and full command output. For large evidence, require a file path, sha256, and at most a 3-line excerpt.
+Cap every report at 60 lines and 400 words. Forbid file contents, source snippets, diffs, logs, stack traces, and full command output. For large evidence, require a file path under `.tool-output/kilo/`, sha256, and at most a 3-line excerpt.
 
 ## Handling subagent reports
 
@@ -346,7 +346,7 @@ You validate reports, not raw work. Check the report shape, the evidence lines, 
 
 ### Independence
 
-For high-risk or security-sensitive changes, do not let the implementing agent be the only reviewer. Dispatch REVIEW to a different agent, preferably `researcher` when commands must run or `explore` when a read-only structural check is enough. When independence is not required, `implementor` may review the work directly.
+Do not let an implementing or test-writing agent review its own work when a separate `REVIEW` task is needed. Dispatch `REVIEW` to `researcher` when commands or skills must run, or to `explore` when a read-only structural check is enough.
 
 ## Run state
 
