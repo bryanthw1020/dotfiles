@@ -70,6 +70,7 @@ EVIDENCE: Reproducing commands or references, or "None."
 ```text
 STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_INPUT | BLOCKED | FAILED
 VERDICT: PASS | CONCERNS | FAIL
+SKILLS: Loaded skill names via skill_search, or "None (checked available skills)".
 BLOCKING: At most 5 bullets, `path:line` - issue.
 NONBLOCKING: At most 5 bullets.
 VERIFICATION: At most 5 bullets, `command` -> pass/fail, one-line result.
