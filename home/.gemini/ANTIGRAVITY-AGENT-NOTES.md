@@ -58,9 +58,9 @@ the installed binary (`~/.gemini/antigravity-cli/builtin/`).
 | Worktree/branch isolation rules | No Antigravity equivalent. Retained as body prose in `delegator.md`, `implementor.md`, and `test-*.md`; nothing in the runtime enforces them. |
 | `permission.task` allowlist | Delegator gets `invoke_subagent`, `send_message`, `manage_inbox`, and `manage_subagents`. `define_subagent` is withheld because the source forbids creating subagents at runtime. |
 | `task` subagent allowlist (`explore`, `researcher`, `implementor`, `test-laravel`, `test-js-ts`, `test-react-nextjs`, `test-vue-nuxt`) | `invoke_subagent` accepts any `TypeName`, so the allowlist cannot be enforced. Type scoping survives only as prose in the Delegator's routing rules. |
-| `permission.edit: deny` on Delegator | Delegator has no `write_to_file`, `edit_file`, or `multi_replace_file_content`. |
+| `permission.edit: deny` and no direct repo/shell access on Delegator | Delegator has no `view_file`, `run_command`, `write_to_file`, `edit_file`, or `multi_replace_file_content`. |
 | `permission.edit/write/notebook_*: deny` on Researcher | Researcher has no write, edit, or notebook tools. |
-| `permission.bash` allow/deny patterns | Antigravity agent frontmatter has no per-command rule syntax. `run_command` is granted and the exact allowed or forbidden commands are stated in prose. |
+| `permission.bash` allow/deny patterns | Antigravity agent frontmatter has no per-command rule syntax. Delegator omits `run_command` entirely (`bash: deny` in Kilo); Researcher, Implementor, and `test-*` get `run_command` and state their allowed/forbidden commands in prose. |
 | `permission.question` | Delegator gets `ask_question`; Implementor, Researcher, and the four `test-*` specialists do not, and their bodies state that it is unavailable. |
 | `permission.todowrite` | No Antigravity todo tool exists. Delegator keeps its run-state block instead; the section is called out in the platform mapping. |
 | `manage_task` granted to Implementor and `test-*` | No direct Kilo counterpart; Kilo denied `todowrite`. `manage_task` covers background and cron task management, not todo lists, so the todo denial is intact. |
@@ -79,9 +79,7 @@ the installed binary (`~/.gemini/antigravity-cli/builtin/`).
 
 ## Deliberate deviations
 
-- Delegator keeps `view_file` because the Kilo source never denied the `read` tool;
-  it only denied search, listing, and web tools. The 200-line direct-read rule stays
-  as prose.
+- Delegator omits both `view_file` and `run_command` so it never reads files or runs shell commands during Intake; all repository discovery and git branch preparation are delegated to subagents.
 - Delegator's routing table and run-state block still use the names `explore`,
   `researcher`, `implementor`, `test-laravel`, `test-js-ts`, `test-react-nextjs`, and
   `test-vue-nuxt` so the original instruction text survives intact. The mapping
