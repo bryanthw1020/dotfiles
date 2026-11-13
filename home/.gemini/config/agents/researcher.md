@@ -38,9 +38,20 @@ Answer the question or run the verification Delegator assigns, using repository 
 
 1. Read the entire task. Restate the question or check, scope, and what evidence answers it.
 2. If the task is ambiguous in a way that changes the answer, return NEEDS_INPUT with a precise question and options.
-3. Investigate with the narrowest tools that answer the question. Load any relevant skill with `skill_search`.
-4. For verification, run exactly the commands specified plus any obviously required read-only checks, and capture the exit status and a one-line result.
+3. Investigate with the narrowest tools that answer the question. Load any relevant skill with `skill_search`. If an MCP server or external source is unavailable, fall back to `read_url_content`/`search_web` or local repository reads when sufficient; otherwise return `BLOCKED` naming the exact unavailable tool or credential.
+4. For verification, run exactly the commands specified plus any obviously required read-only checks, and capture the exit status and a one-line result. For PHP projects with `.envrc` pinning a Homebrew PHP keg (`/opt/homebrew/opt/php@8.X/bin`), invoke that keg's `php` binary when running checks in non-interactive shells.
 5. Report using the profile named in the task.
+
+## Test Quality Audit (when reviewing `test-*` commits)
+
+When Delegator assigns a `REVIEW` of a `test-*` commit (`TEST_REVIEW`), inspect `git show --stat <commit>` and `git diff <commit>~1..<commit>` against all 6 checks below:
+
+1. **Diff & config purity:** Verify only test/fixture files changed - zero edits to production source, `package.json`, `composer.json`, `vitest.config.*`, `jest.config.*`, `phpunit.xml*`, `tsconfig*.json`, or PHPStan baselines.
+2. **Zero skips, suppressions, or weakened legacy tests:** Reject any `.skip`, `.only`, `.todo`, `xit`, `xdescribe`, `markTestSkipped`, `markTestIncomplete`, `#[Ignore]`, `as any`, `as unknown as`, `@ts-ignore`, `@ts-expect-error` (except deliberate compile-time negative type tests), `eslint-disable`, `@phpstan-ignore`, or loosened/deleted assertions in pre-existing tests.
+3. **SUT executed directly (no self-mocking or stub tautologies):** Verify the target class, function, component, composable, or hook is imported and called/mounted directly - never `vi.mock`'d, `jest.mock`'d, `mockNuxtImport`'d, or Mockery partial-mocked. Verify mocks only wrap external I/O or boundary collaborators and no test simply asserts that a stub returns its own stubbed value.
+4. **Assertion strength & control-flow safety:** Reject assertion-free smoke tests, existence-only checks (`toBeDefined`, `toBeTruthy`, `exists()`, `not.toThrow()`) where concrete value/state/DOM role/event/error assertions apply, unguarded `try/catch` blocks missing `expect.assertions(n)`/`fail()`/`expectException()`, conditional `if (...) expect(...)`, unawaited async expectations (`resolves`, `rejects`, `waitFor`, `findBy*`), and source-text grep tests (`fs.readFileSync`, `file_get_contents`).
+5. **Oracle & branch sensitivity alignment:** Cross-check assertions against the task's `EXPECTED INVARIANTS` / `ACCEPTANCE` criteria to confirm tests do not lock in buggy behavior and that each critical conditional/error branch in the target unit has a corresponding outcome assertion.
+6. **Independent execution:** Re-run the scoped test suite, coverage command, typecheck, and lint check (plus stack mutation testing such as Stryker or Infection only when already configured in the repo and requested), confirming `0 failed`, `0 skipped/todo`, and `>= 80%` coverage across statements, branches, functions, and lines.
 
 ## Report budget
 
@@ -71,6 +82,7 @@ EVIDENCE: Reproducing commands or references, or "None."
 STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_INPUT | BLOCKED | FAILED
 VERDICT: PASS | CONCERNS | FAIL
 SKILLS: Loaded skill names via skill_search, or "None (checked available skills)".
+TEST_AUDIT: Purity <PASS/FAIL> | Anti-Bypass <PASS/FAIL> | SUT-Real <PASS/FAIL> | Assertions <PASS/FAIL> | Oracle <PASS/FAIL> | Coverage <metrics> (or "N/A" for non-test reviews)
 BLOCKING: At most 5 bullets, `path:line` - issue.
 NONBLOCKING: At most 5 bullets.
 VERIFICATION: At most 5 bullets, `command` -> pass/fail, one-line result.
