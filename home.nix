@@ -7,6 +7,20 @@ let
   # symlink follows upgrades, unlike the copy that `safe-chain setup` drops
   # in ~/.safe-chain/scripts.
   brewPrefix = if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew" else "/usr/local";
+  # Xdebug settings installed into every Homebrew PHP keg (see
+  # configuration.nix). Kept in its own file because the tap formula rewrites
+  # *xdebug*.ini in each conf.d on install/upgrade, and named without
+  # "xdebug" so it is not caught by that glob.
+  phpXdebugIni = pkgs.writeText "php-xdebug.ini" ''
+    [xdebug]
+    ; yes makes breakpoints work with no trigger. Switch to trigger if CLI
+    ; startup latency matters, then export XDEBUG_TRIGGER=1 to debug.
+    xdebug.mode = debug,develop
+    xdebug.start_with_request = trigger
+    xdebug.client_host = 127.0.0.1
+    xdebug.client_port = 9003
+    xdebug.idekey = VSCODE
+  '';
   safeChainHook = "${brewPrefix}/opt/safe-chain/libexec/lib/node_modules/@aikidosec/safe-chain/src/shell-integration/startup-scripts/init-posix.sh";
   # mise owns Node version management (see programs.mise below). Non-interactive
   # shells do not source .zshrc, so expose mise's shims dir from .zshenv
@@ -208,6 +222,15 @@ in
       ${brewPrefix}/bin/safe-chain setup-ci >/dev/null ||
         echo "warning: safe-chain setup-ci failed; agent shims may be stale" >&2
     fi
+  '';
+
+  # Xdebug tuning for every installed Homebrew PHP keg. The glob skips absent
+  # versions, so adding a keg needs no change here.
+  home.activation.phpXdebug = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    for confDir in ${brewPrefix}/etc/php/*/conf.d; do
+      [ -d "$confDir" ] || continue
+      install -m 0644 ${phpXdebugIni} "$confDir/99-php-debug.ini"
+    done
   '';
 
   # Node version manager (replaces Laravel Herd's bundled nvm). The global

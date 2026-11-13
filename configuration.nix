@@ -74,6 +74,11 @@
       "shivammathur/extensions/phpredis@8.3"
       "shivammathur/extensions/phpredis@8.4"
       "shivammathur/extensions/phpredis@8.5"
+      # Xdebug follows the same per-version pairing. Its formula drops
+      # 20-xdebug.ini into that PHP's conf.d; tuning lives in home.nix.
+      "shivammathur/extensions/xdebug@8.3"
+      "shivammathur/extensions/xdebug@8.4"
+      "shivammathur/extensions/xdebug@8.5"
       "ripgrep"
       "railway"
       "speedtest"
