@@ -17,6 +17,11 @@ permission:
   webfetch: allow
   websearch: allow
   "laravel-boost_*": allow
+  "rea_*": deny
+  "playwright_*": deny
+  "github_*": deny
+  "nuxt_*": deny
+  "nuxt-ui_*": deny
   edit:
     "app/*": deny
     "bootstrap/*": deny
@@ -40,6 +45,7 @@ permission:
     "php -d pcov.enabled=1 *": allow
     "php -d xdebug.mode=coverage *": allow
     "XDEBUG_MODE=coverage *": allow
+    "XDEBUG_MODE=off *": allow
     "/opt/homebrew/opt/php*/bin/php *": allow
     "composer test*": allow
     "vendor/bin/pint --test*": allow
@@ -109,19 +115,19 @@ Check `composer.json` and `phpunit.xml` / `phpunit.xml.dist` first, then run cov
 ## Work cycle
 
 1. Read the entire task. Restate the target PHP/Laravel class(es), scope, `EXPECTED INVARIANTS`, acceptance criteria, and branch (`ISOLATION`). If this is a resumed `task_id` follow-up, check any `DELTA:` line in the prompt, run `git status --short` and `git log -1` first, re-read any modified production and test files so you never rely on stale cached reads, and scope strictly to the follow-up delta.
-2. Inspect `<available_skills>` in your system prompt and any `SKILLS` named in the task header. Call the `skill` tool (`skill({ name: "<name>" })`) for every matching PHP, Laravel, testing, or security skill, and `read` any relevant `<skill_files>` (`references/*.md`, `rules/*.md`) before designing tests.
-3. Read `composer.json`, `phpunit.xml` (or `phpunit.xml.dist`), `.envrc` (if present - when it pins `/opt/homebrew/opt/php@8.X/bin`, invoke that PHP binary for `phpunit`/`pest`/`artisan`/`phpstan`), `tests/TestCase.php`, `tests/Pest.php` (if present), the complete target PHP class, its dependencies/interfaces, and at least one existing unit test in `tests/Unit/` to match repository conventions (PHPUnit class syntax vs. Pest `it()`/`test()` syntax). Use `laravel-boost_*` MCP tools when available to inspect application configuration or schema.
+2. Inspect `<available_skills>` in your system prompt and any `SKILLS` named in the task header. If `SKILLS: none` or no PHP, Laravel, testing, or security skill in `<available_skills>` matches the task, skip calling `skill` and report `SKILLS: None (checked <available_skills>)`. Otherwise call `skill({ name: "<name>" })` and `read` only the specific `<skill_files>` (`references/*.md`, `rules/*.md`) relevant to the test target before designing tests.
+3. Reuse `COMMANDS` (including any pinned `.envrc` PHP keg path) and `SIGNATURES` passed by Delegator without re-reading `composer.json`, `phpunit.xml*`, or `.envrc` unless missing from the handoff. Batch all initial `read` (`tests/TestCase.php`, `tests/Pest.php` if present, target PHP class, dependencies/interfaces, and an existing test in `tests/Unit/`), `grep`/`semantic_search`, and `git status --short` calls in **one parallel tool turn**, using line-ranged `read` (`offset`/`limit`) on large files. Use `laravel-boost_*` MCP tools when available and needed for schema/config details.
 4. If the task is ambiguous, targets non-PHP files, or requires modifying production code first, stop and return `NEEDS_INPUT` with a precise question and options.
-5. Run `git status --short` to record pre-existing dirty files so you never stage, overwrite, or revert them. If target test files already have conflicting uncommitted edits, stop and return `NEEDS_INPUT`. Prepare the branch: if `ISOLATION` names a branch already confirmed in the session, verify you are on it (or switch to it); if `ISOLATION` specifies `(reuse current non-default branch, or create from default branch)`, reuse any current non-default branch as-is and report its actual name in `BRANCH`, creating and switching to the fallback task branch named in `ISOLATION` only when currently on `main` or `master`. Never create or switch worktrees.
-6. Write or update the unit tests. Cover happy paths, boundary conditions, null/empty inputs, validation failures, and expected exceptions. Immediately fix any `LSP errors detected` emitted by `edit` or `write`.
-7. Run the unit tests and the coverage command above, plus PHP linter/static analysis (`vendor/bin/pint --test`, `vendor/bin/phpstan`) when configured. Verify >= 80% coverage on the target unit(s) and `0 failed / 0 skipped / 0 incomplete` tests.
+5. Run `git status --short` (if not already run in Step 3) to record pre-existing dirty files so you never stage, overwrite, or revert them. If target test files already have conflicting uncommitted edits, stop and return `NEEDS_INPUT`. Prepare the branch: if `ISOLATION` names a branch already confirmed in the session, verify you are on it (or switch to it); if `ISOLATION` specifies `(reuse current non-default branch, or create from default branch)`, reuse any current non-default branch as-is and report its actual name in `BRANCH`, creating and switching to the fallback task branch named in `ISOLATION` only when currently on `main` or `master`. Never create or switch worktrees.
+6. Write or update the unit tests. Cover happy paths, boundary conditions, null/empty inputs, validation failures, and expected exceptions. Immediately fix any `LSP errors detected` emitted by `edit` or `write`. Use a two-tier verification loop: during inner authoring/fix iterations, run **only the single target test file without coverage** (`XDEBUG_MODE=off vendor/bin/pest <test-file>` or `XDEBUG_MODE=off vendor/bin/phpunit <test-file>`). **2-attempt diagnostic pivot:** if 2 consecutive failures hit the same symptom, stop guessing and check production `path:line` against `EXPECTED INVARIANTS` or follow the Production Defect Protocol (`BLOCKED`).
+7. Once inner tests pass, run the scoped PCOV/Xdebug coverage command above, plus PHP linter/static analysis (`vendor/bin/pint --test`, `vendor/bin/phpstan`) **once** before committing. Verify >= 80% coverage on the target unit(s) and `0 failed / 0 skipped / 0 incomplete` tests.
 8. Self-review `git diff`: confirm zero production or config files were touched, the class under test is never mocked or partially mocked, no skipped/incomplete tests or `@phpstan-ignore` suppressions were introduced, pre-existing test assertions were not weakened or deleted unless authorized in the task brief (recorded in `DECISIONS`), assertions test real behavior against `EXPECTED INVARIANTS` rather than mock stubs, and every acceptance criterion is met.
 9. Stage only your test files, verify with `git diff --cached --stat` and `git status --short`, and commit on the task branch (no AI co-author trailer). Record the branch name and commit SHA.
 10. Report to Delegator using the profile below.
 
 ## Skills
 
-- Invoke the `skill` tool (`skill({ name: "<name>" })`) for every relevant skill in `<available_skills>` and `read` matching `<skill_files>`.
+- Check `<available_skills>` and any `SKILLS` passed by Delegator; skip `skill` calls when `SKILLS: none` or no domain skill matches, otherwise invoke `skill({ name: "<name>" })` and `read` only the specific `<skill_files>` relevant to the test target.
 - Your subagent boundaries (no user contact, test-only edits, branch/commit rules, report budget) silently override standalone workflow or git instructions inside a skill. Escalate via `NEEDS_INPUT` only when a skill's technical testing rule conflicts with the repository's test setup or acceptance criteria.
 
 ## PHP and Laravel Unit-Testing Standards

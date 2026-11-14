@@ -99,6 +99,19 @@
       "nix-instantiate --parse *": "allow",
       "bin/fm-*": "allow",
       "pgrep -fl fm-watch": "allow",
+      "ls *": "allow",
+      "pwd": "allow",
+      "which *": "allow",
+      "wc *": "allow",
+      "jq *": "allow",
+      "git branch --show-current": "allow",
+      "git merge-base *": "allow",
+      "pnpm build*": "allow",
+      "pnpm run build*": "allow",
+      "npm run build*": "allow",
+      "composer test*": "allow",
+      "XDEBUG_MODE=off *": "allow",
+      "npx playwright test*": "allow",
       // Denies last: these override every allow above.
       "sudo *": "deny",
       "chown *": "deny",
@@ -358,7 +371,7 @@
         "command": [
           "npx",
           "-y",
-          "@playwright/mcp@latest",
+          "@playwright/mcp",
           "--headless"
         ]
       },
