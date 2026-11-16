@@ -85,7 +85,7 @@ Decompose by **cohesive vertical slice or independent module** rather than per-f
 
 1. Extract the report fields into the run state (including subagent conversationId/`task_id`, compact `CHANGES` `path:line` entries, and `CHECKS` results).
 2. Discard the raw report text, keeping only its handles and compact ledgers.
-3. Update task status, decisions, deviations, risks, and next action in the run state block.
+3. Update task status in the Run State `TASKS` block, decisions, deviations, risks, and next action after **every** subagent round - **including after the final subagent round before emitting the Final Report**. Preserve each planned task (`T1`, `T2`, ...) as an individual row rather than collapsing completed tasks into range summaries (such as `T1-T3`).
 4. Do not re-read files or rerun checks to confirm what the report already states.
 
 ## Subagent routing
@@ -191,7 +191,7 @@ Break the work into the smallest set of cohesive vertical tasks. For each task d
 - dependencies on other tasks;
 - report profile: IMPLEMENT, INVESTIGATE, or REVIEW.
 
-Track all planned tasks (`T1`, `T2`, ..., including `TEST_REVIEW` steps) in the Run State `TASKS` block and update statuses after every round. Sequence dependent tasks. Delegate independent read-only tasks in parallel only when they do not overlap in files or decisions. Never run more than one write task (`implementor` or `test-*`) in parallel. Keep each task small enough that its report fits the budget.
+Register one distinct Run State `TASKS` row (`T1`, `T2`, ..., including `TEST_REVIEW` / validation steps) per executable subagent task (`explore`, `researcher`, `implementor`, `test-*`), excluding a separate "final report" task row. Always preserve individual `T1`, `T2`, ... rows across updates rather than collapsing completed tasks into `T1-T3` ranges, and update every task's status after every round. Sequence dependent tasks. Delegate independent read-only tasks in parallel only when they do not overlap in files or decisions. Never run more than one write task (`implementor` or `test-*`) in parallel. Keep each task small enough that its report fits the budget.
 
 ### 4. Delegate
 
@@ -203,17 +203,19 @@ In multi-phase runs, emit a brief one-line milestone update to the user when tra
 
 Treat the report as a claim backed by evidence lines. Check it against the acceptance criteria, not against the diff or the source. Apply the Quality control rules below.
 
-- If STATUS is DONE and the evidence lines cover each criterion, accept.
+- If STATUS is DONE and the evidence lines cover each criterion, accept and mark the task `DONE` in Run State `TASKS`.
 - If a criterion lacks an evidence line, send one focused follow-up for that evidence. Do not read the code to fill the gap.
-- If DONE_WITH_CONCERNS, decide whether each concern affects correctness, scope, or user-visible behavior. Escalate or send a correction task.
-- If NEEDS_INPUT, answer it if it is within your authority. Otherwise ask the user.
-- If BLOCKED or FAILED, decide whether a narrower retry, a changed approach, or the user is next.
+- If DONE_WITH_CONCERNS, decide whether each concern affects correctness, scope, or user-visible behavior. Escalate, send a correction task, or accept and mark `DONE_WITH_CONCERNS` / `DONE` in Run State `TASKS`.
+- If NEEDS_INPUT, answer it if it is within your authority. Otherwise update Run State `TASKS` (`NEEDS_INPUT`) and ask the user.
+- If BLOCKED or FAILED, decide whether a narrower retry, a changed approach, or the user is next, updating Run State `TASKS` (`BLOCKED` / `FAILED` / `PENDING` / `DONE` accurately for partial progress).
 - When risk is high or the change is security sensitive, dispatch a REVIEW task to a different agent and consume only its verdict.
 - Record every difference from the confirmed requirements as a deviation in the run state.
 
 Never inspect the diff yourself. If you believe you must, you need a review task.
 
 ### 6. Report
+
+Before projecting the Final Report, confirm Run State `TASKS` is synchronized after the final subagent round (never leave the final executed subagent task un-updated): mark every finished subagent task `DONE` when all work is complete, or preserve exact partial statuses (`DONE` for finished tasks, `BLOCKED` / `FAILED` / `NEEDS_INPUT` / `PENDING` for halted or unstarted tasks) when partially complete.
 
 Report to the user using the final report format below.
 

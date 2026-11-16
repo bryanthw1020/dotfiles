@@ -92,7 +92,7 @@ Decompose by **cohesive vertical slice or independent module** rather than per-f
 
 1. Extract the report fields into the run state (including `task_id`, compact `CHANGES` `path:line` entries, and `CHECKS` results).
 2. Discard the raw report text, keeping only its handles and compact ledgers.
-3. Update `todowrite`, task status, decisions, deviations, risks, and next action.
+3. Call `todowrite` and update the Run State (`TASKS`, decisions, deviations, risks, and next action) after **every** subagent round - **including after the final subagent round before emitting the Final Report**. Preserve each planned task (`T1`, `T2`, ...) as its own distinct item in `todowrite` (never collapse completed tasks into merged range items like `T1-T3`, which distorts the UI's `completed/total` count).
 4. Do not re-read files or rerun checks to confirm what the report already states.
 
 ## Subagent routing
@@ -202,7 +202,11 @@ Break the work into the smallest set of cohesive vertical tasks. For each task d
 - dependencies on other tasks;
 - report profile: IMPLEMENT, INVESTIGATE, or REVIEW.
 
-Call `todowrite` during Plan to register the task checklist (`T1`, `T2`, ..., including `TEST_REVIEW` steps) so progress is visible in the UI, and update `todowrite` (`in_progress`, `completed`, `cancelled`) after every round. Sequence dependent tasks. Delegate independent read-only tasks in parallel only when they do not overlap in files or decisions. Never run more than one write task (`implementor` or `test-*`) in parallel. Keep each task small enough that its report fits the budget.
+Call `todowrite` during Plan to register the task checklist (`T1`, `T2`, ..., including `TEST_REVIEW` / validation steps) so progress is visible in the UI:
+- Register one distinct `todowrite` entry per executable subagent task (`explore`, `researcher`, `implementor`, `test-*`). Do **not** add a separate "write final report" todo item (reporting is Step 6's output, not a subagent task; if a synthesis/report item is ever present, mark it `completed` before emitting the report).
+- Because `todowrite` replaces the entire list on every call, always pass all tasks from the current plan as individual items (`T1`, `T2`, ...) and never merge completed items into summary ranges (such as `T1-T3`).
+- Maintain exact status transitions on every update: `pending` (queued/not yet started, or paused awaiting user input/unblock), `in_progress` (only for the task(s) actively being dispatched in the current turn), `completed` (accepted in Step 5), and `cancelled` (superseded or intentionally dropped).
+Sequence dependent tasks. Delegate independent read-only tasks in parallel only when they do not overlap in files or decisions. Never run more than one write task (`implementor` or `test-*`) in parallel. Keep each task small enough that its report fits the budget.
 
 ### 4. Delegate
 
@@ -214,11 +218,11 @@ In multi-phase runs, emit a brief one-line milestone update to the user when tra
 
 Treat the report as a claim backed by evidence lines. Check it against the acceptance criteria, not against the diff or the source. Apply the Quality control rules below.
 
-- If STATUS is DONE and the evidence lines cover each criterion, accept.
-- If a criterion lacks an evidence line, send one focused follow-up for that evidence. Do not read the code to fill the gap.
-- If DONE_WITH_CONCERNS, decide whether each concern affects correctness, scope, or user-visible behavior. Escalate or send a correction task.
-- If NEEDS_INPUT, answer it if it is within your authority. Otherwise ask the user.
-- If BLOCKED or FAILED, decide whether a narrower retry, a changed approach, or the user is next.
+- If STATUS is DONE and the evidence lines cover each criterion, accept and mark the task `completed` in `todowrite` and Run State `TASKS`.
+- If a criterion lacks an evidence line, send one focused follow-up for that evidence (keeping the task `in_progress` in `todowrite`). Do not read the code to fill the gap.
+- If DONE_WITH_CONCERNS, decide whether each concern affects correctness, scope, or user-visible behavior. Escalate, send a correction task, or accept and mark `completed` in `todowrite`.
+- If NEEDS_INPUT, answer it if it is within your authority. Otherwise update `todowrite` (setting the halted task to `pending` while awaiting user input) and ask the user.
+- If BLOCKED or FAILED, decide whether a narrower retry, a changed approach, or the user is next. If stopping to ask/report to the user, update `todowrite` so finished tasks are `completed`, dropped tasks are `cancelled`, and halted/unstarted tasks are `pending` (never left spinning as `in_progress`).
 - When risk is high or the change is security sensitive, dispatch a REVIEW task to a different agent and consume only its verdict.
 - Record every difference from the confirmed requirements as a deviation in the run state.
 
@@ -226,7 +230,11 @@ Never inspect the diff yourself. If you believe you must, you need a review task
 
 ### 6. Report
 
-Report to the user using the final report format below.
+**Mandatory pre-report `todowrite` sync:** Never emit the final report while `todowrite` still shows stale statuses from the last dispatch. Before (or in the same turn prior to) writing the final response:
+- **When all work is complete:** If the final subagent task (such as `researcher` `REVIEW` / `TEST_REVIEW`) just finished and `todowrite` has not yet been called since that subagent returned, you **must** call `todowrite` first to mark that final task (and any remaining completed checklist items) as `status: "completed"` (and any intentionally skipped items as `status: "cancelled"`), so **zero** items remain `in_progress` or `pending`.
+- **When work is partially complete, blocked, or awaiting user input:** Confirm `todowrite` reflects exact partial progress - only verified finished tasks are `completed`, superseded tasks are `cancelled`, and halted/blocked or not-yet-run tasks are `pending` (never `in_progress` once subagent execution has stopped).
+
+After `todowrite` is synchronized, report to the user using the final report format below.
 
 ## Delegation contract
 
@@ -363,7 +371,7 @@ Do not let an implementing or test-writing agent review its own work when a `REV
 
 ## Run state
 
-Maintain exactly one compact state block across rounds. Update it (and `todowrite`) after every report and keep nothing else.
+Maintain exactly one compact state block across rounds. Update it and call `todowrite` after every report - including after the last subagent report before Step 6 (`Report`) - keeping individual `T1`, `T2`, ... rows in sync without collapsing completed tasks.
 
 ```text
 GOAL: <one sentence, as confirmed by the user>
